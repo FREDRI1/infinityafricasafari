@@ -11,58 +11,18 @@ import {
   Star,
 } from "lucide-react";
 import { SafariSearch } from "@/components/safari-search";
+import { getHomepageContent } from "@/lib/homepage-content";
 import { getPublicDestinations } from "@/lib/catalog";
-
-const excursions = [
-  {
-    title: "Kaya Kinondo Sacred Forest",
-    duration: "Half day",
-    description: "A guided cultural and nature walk through a sacred coastal forest.",
-    price: "$85",
-    image: "/assets/images/excursions/kaya-kinondo.jpg",
-    imageAlt: "Visitors walking beneath the canopy at Kaya Kinondo Sacred Forest",
-  },
-  {
-    title: "Malindi Marine National Park",
-    duration: "Half day",
-    description: "Snorkelling and coral reef exploration in the Indian Ocean.",
-    price: "$80",
-    image: "/assets/images/excursions/malindi-reef.jpg",
-    imageAlt: "Coral and sponges at Malindi Reef",
-  },
-  {
-    title: "Funzi & Kinazini Islands",
-    duration: "Full day",
-    description: "A mangrove dhow cruise and a relaxed sandbank swim.",
-    price: "$90",
-    image: "/assets/images/excursions/kenya-coast.jpg",
-    imageAlt: "Kenyan coastline at Diani Beach, shown as illustrative coastal photography",
-  },
-];
-
-const guestReviews = [
-  {
-    quote:
-      "An absolutely incredible experience! The guides were so knowledgeable and the accommodations were top-notch. Highly recommend!",
-    name: "Sarah Jenkins",
-    country: "United Kingdom",
-  },
-  {
-    quote:
-      "We saw the big five on our second day! The attention to detail in planning our itinerary made this trip completely stress-free.",
-    name: "Michael Chen",
-    country: "USA",
-  },
-  {
-    quote:
-      "Infinity Africa Safari provided a perfect balance of adventure and relaxation. The coastal extension after the safari was magical.",
-    name: "Elena Rossi",
-    country: "Italy",
-  },
-];
+import { formatPrice } from "@/lib/pricing";
+import { getPublicMediaUrl } from "@/lib/media-storage";
 
 export default async function Home() {
-  const destinations = await getPublicDestinations();
+  const [destinations, homepageContent] = await Promise.all([
+    getPublicDestinations(),
+    getHomepageContent(),
+  ]);
+  const excursions = homepageContent.excursions;
+  const guestReviews = homepageContent.reviews;
 
   return (
     <main>
@@ -169,7 +129,7 @@ export default async function Home() {
               <article className="excursion-card" key={excursion.title}>
                 <div className="excursion-image">
                   <Image
-                    src={excursion.image}
+                    src={getPublicMediaUrl(excursion.image)}
                     alt={excursion.imageAlt}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 33vw"
@@ -183,7 +143,7 @@ export default async function Home() {
                   </span>
                   <p>{excursion.description}</p>
                   <div className="excursion-price">
-                    <strong>From {excursion.price}</strong>
+                    <strong>From {formatPrice(excursion.priceUsd)}</strong>
                     <span>Indicative estimate · per person</span>
                   </div>
                   <Link
@@ -199,32 +159,9 @@ export default async function Home() {
           </div>
           <p className="excursion-note">
             Prices are indicative estimates in USD; availability and final
-            pricing are confirmed by our team. Images are illustrative. Photo
-            credits:{" "}
-            <a
-              href="https://commons.wikimedia.org/wiki/File:Kaya_Kinondo,_Sacred_Forest,_Kenya.jpg"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Ninara (CC BY 2.0)
-            </a>
-            ,{" "}
-            <a
-              href="https://commons.wikimedia.org/wiki/File:Corals_at_Malindi_Reef.jpg"
-              target="_blank"
-              rel="noreferrer"
-            >
-              ordercrazy (CC0)
-            </a>
-            , and{" "}
-            <a
-              href="https://commons.wikimedia.org/wiki/File:Diani_Beach_-_December_2023.jpg"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Tall Black (CC BY-SA 4.0)
-            </a>{" "}
-            via Wikimedia Commons.
+            pricing are confirmed by our team. Upload only images you own or
+            have permission to use. Bundled image credits are listed in the{" "}
+            <Link href="/assets/MEDIA.md">media manifest</Link>.
           </p>
         </div>
       </section>
@@ -289,9 +226,9 @@ export default async function Home() {
                 <div
                   className="review-stars"
                   role="img"
-                  aria-label="5 out of 5 stars"
+                  aria-label={`${review.rating} out of 5 stars`}
                 >
-                  {Array.from({ length: 5 }, (_, index) => (
+                  {Array.from({ length: review.rating }, (_, index) => (
                     <Star
                       key={index}
                       size={15}

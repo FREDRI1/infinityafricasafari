@@ -1,7 +1,20 @@
 import type { NextConfig } from "next";
 
+const storageEndpoint = process.env.AWS_ENDPOINT_URL_S3;
+const storageHostname = storageEndpoint
+  ? new URL(storageEndpoint).hostname
+  : undefined;
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      ...(storageHostname
+        ? [{ protocol: "https" as const, hostname: storageHostname, pathname: "/**" }]
+        : []),
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
+    ],
+  },
   async headers() {
     return [
       {

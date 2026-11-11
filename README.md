@@ -12,7 +12,8 @@ Premium safari discovery and assisted booking platform built with Next.js, stric
 - Confirmation email and administrator notification through Resend when configured.
 - Private staff sign-in and role-guarded booking dashboard.
 - Role-guarded safari and destination management, itinerary editing, and archive workflows.
-- Local media library with source and license information.
+- Persistent media uploads to Neon Object Storage and a role-protected media library.
+- Homepage excursion and guest review content managed in the admin website-content editor.
 - Booking search, status history, customer communication notes and WhatsApp hand-off links.
 - Manually recorded payments remain unverified until an authorized administrator verifies them.
 - Sample itinerary concepts and licensed illustrative Unsplash photography; no actual prices or business contact details are assumed.
@@ -42,6 +43,7 @@ Add these environment variables to the Vercel Production environment:
 - `DIRECT_URL`: Neon direct (unpooled) connection string, used by Prisma.
 - `AUTH_SECRET`: the Auth.js secret.
 - `NEXT_PUBLIC_SITE_URL`: the canonical HTTPS deployment URL.
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3`, and `AWS_REGION`: Neon Object Storage credentials for the production branch. Keep these server-only; never use the `NEXT_PUBLIC_` prefix.
 
 Set `AUTH_URL` to the canonical HTTPS deployment URL if Auth.js does not detect it automatically. Optional email and WhatsApp integrations use `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_NOTIFICATION_EMAIL`, and `NEXT_PUBLIC_WHATSAPP_NUMBER`. Do not upload `.env` wholesale: it contains local-only values and credentials that should not be exposed. The initial admin account and database content are seeded separately and do not require `ADMIN_PASSWORD` on Vercel.
 
@@ -64,4 +66,4 @@ Run `npm run test` for booking validation tests. Database-backed flows require v
 
 ## Media
 
-Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). The admin library currently displays bundled assets and existing media records; persistent Cloudinary uploads are not implemented. No generated video is included.
+Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). Staff with content access can upload JPEG, PNG, WebP, or GIF images up to 4 MB from Admin → Media library. Uploads are stored in the production branch's public-read `site-media` bucket and can be selected in safari, destination, and homepage content editors. Upload only images you own or are licensed to use. No video upload is supported.

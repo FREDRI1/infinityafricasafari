@@ -5,6 +5,7 @@ import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminDestinationForm } from "@/components/admin-destination-form";
 import { saveDestination } from "@/app/admin/destinations/actions";
 import { requireStaff } from "@/lib/admin";
+import { getAdminMediaChoices } from "@/lib/admin-media";
 
 export const metadata: Metadata = {
   title: "Add destination",
@@ -18,6 +19,7 @@ export default async function NewDestinationPage() {
     StaffRole.ADMIN,
     StaffRole.CONTENT_EDITOR,
   ]);
+  const mediaChoices = await getAdminMediaChoices();
 
   return (
     <main className="admin-shell page-width">
@@ -32,7 +34,10 @@ export default async function NewDestinationPage() {
           All destinations
         </Link>
       </div>
-      <AdminDestinationForm action={saveDestination} />
+      <AdminDestinationForm
+        mediaChoices={mediaChoices}
+        action={saveDestination}
+      />
     </main>
   );
 }

@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
+import { AdminMediaUploadForm } from "@/components/admin-media-upload-form";
 import { localMedia } from "@/data/media";
+import { getPublicMediaUrl } from "@/lib/media-storage";
 import { prisma } from "@/lib/prisma";
 import { requireStaff } from "@/lib/admin";
 
@@ -29,8 +31,8 @@ export default async function AdminMediaPage() {
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Media library</span>
-          <h1>Images and video</h1>
-          <p>Review approved local imagery and media already stored in Cloudinary.</p>
+          <h1>Images</h1>
+          <p>Upload images from your computer and choose them in website content editors.</p>
         </div>
         <Link className="button button-outline" href="/assets/MEDIA.md" target="_blank">
           Media sources and license
@@ -40,8 +42,18 @@ export default async function AdminMediaPage() {
       <section className="media-library-section">
         <div className="admin-section-heading">
           <div>
+            <span className="eyebrow">Add to your library</span>
+            <h2>Upload an image</h2>
+          </div>
+        </div>
+        <AdminMediaUploadForm />
+      </section>
+
+      <section className="media-library-section">
+        <div className="admin-section-heading">
+          <div>
             <span className="eyebrow">Project assets</span>
-            <h2>Local media library</h2>
+            <h2>Bundled media</h2>
           </div>
         </div>
         <div className="admin-media-grid">
@@ -69,7 +81,7 @@ export default async function AdminMediaPage() {
         <div className="admin-section-heading">
           <div>
             <span className="eyebrow">Persistent uploads</span>
-            <h2>Cloudinary media</h2>
+            <h2>Uploaded media</h2>
           </div>
         </div>
         {uploadedMedia.length ? (
@@ -85,7 +97,7 @@ export default async function AdminMediaPage() {
                     className="cloud-media-preview"
                     role="img"
                     aria-label={media.altText}
-                    style={{ backgroundImage: `url("${media.url}")` }}
+                    style={{ backgroundImage: `url("${getPublicMediaUrl(media.url)}")` }}
                   />
                 )}
                 <div>
@@ -102,8 +114,8 @@ export default async function AdminMediaPage() {
           <div className="admin-empty">
             <h2>No uploaded media yet.</h2>
             <p>
-              Persistent CMS uploads require Cloudinary credentials. They are
-              not stored on the application filesystem.
+              Upload a rights-cleared image above to add it to your persistent
+              website media library.
             </p>
           </div>
         )}

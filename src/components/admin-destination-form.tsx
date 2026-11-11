@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { localMedia } from "@/data/media";
+import type { AdminMediaChoice } from "@/lib/admin-media";
 
 export type DestinationEditorValues = {
   id?: string;
@@ -19,6 +20,7 @@ export type DestinationEditorValues = {
 };
 
 type Props = {
+  mediaChoices: AdminMediaChoice[];
   initialValues?: DestinationEditorValues;
   action: (formData: FormData) => Promise<void>;
 };
@@ -37,12 +39,13 @@ const emptyValues: DestinationEditorValues = {
 };
 
 export function AdminDestinationForm({
+  mediaChoices,
   initialValues = emptyValues,
   action,
 }: Props) {
   const [selectedImage, setSelectedImage] = useState(initialValues.heroImage);
   const [imageAlt, setImageAlt] = useState(initialValues.heroImageAlt);
-  const selectedMedia = localMedia.find((item) => item.src === selectedImage);
+  const selectedMedia = mediaChoices.find((item) => item.value === selectedImage);
 
   return (
     <form action={action} className="admin-content-form">
@@ -98,16 +101,16 @@ export function AdminDestinationForm({
           name="heroImage"
           value={selectedImage}
           onChange={(event) => {
-            const image = localMedia.find(
-              (media) => media.src === event.target.value,
+            const image = mediaChoices.find(
+              (media) => media.value === event.target.value,
             );
             setSelectedImage(event.target.value);
             if (image) setImageAlt(image.alt);
           }}
           required
         >
-          {localMedia.map((media) => (
-            <option value={media.src} key={media.src}>
+          {mediaChoices.map((media) => (
+            <option value={media.value} key={media.value}>
               {media.category} · {media.alt}
             </option>
           ))}
@@ -126,7 +129,7 @@ export function AdminDestinationForm({
       {selectedMedia && (
         <div className="admin-media-preview field-wide">
           <Image
-            src={selectedImage}
+            src={selectedMedia.src}
             alt={selectedMedia.alt}
             width={selectedMedia.width}
             height={selectedMedia.height}

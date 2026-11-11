@@ -428,7 +428,7 @@ export function DashboardQuickActions({ isEditor }: { isEditor: boolean }) {
   const actions = [
     { label: "Add new safari", href: "/admin/safaris/new", icon: Compass, primary: true },
     ...(!isEditor ? [{ label: "Manage bookings", href: "/admin/bookings", icon: CalendarDays, primary: false }] : []),
-    { label: "Update content", href: "/admin/destinations", icon: FileText, primary: false },
+    { label: "Update content", href: "/admin/content", icon: FileText, primary: false },
     ...(!isEditor ? [{ label: "View reports", href: "#reports", icon: ChartNoAxesCombined, primary: false }] : []),
   ];
 

@@ -30,6 +30,8 @@ export function SiteFooter() {
             <span className="footer-label">Discover</span>
             <Link href="/safaris">All safaris</Link>
             <Link href="/#destinations">Destinations</Link>
+            <Link href="/#excursions">Day excursions</Link>
+            <Link href="/#contact">Guest reviews</Link>
             <Link href="/#our-approach">Our approach</Link>
           </div>
           <div>

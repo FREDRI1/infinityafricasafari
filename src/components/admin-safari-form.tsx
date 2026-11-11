@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { localMedia } from "@/data/media";
+import type { AdminMediaChoice } from "@/lib/admin-media";
 
 export type SafariEditorValues = {
   id?: string;
@@ -35,6 +36,7 @@ export type SafariSeasonalPriceEditorValue = {
 
 type Props = {
   destinations: { id: string; name: string; isPublished: boolean }[];
+  mediaChoices: AdminMediaChoice[];
   initialValues?: SafariEditorValues;
   action: (formData: FormData) => Promise<void>;
 };
@@ -58,6 +60,7 @@ const emptyValues: SafariEditorValues = {
 
 export function AdminSafariForm({
   destinations,
+  mediaChoices,
   initialValues = emptyValues,
   action,
 }: Props) {
@@ -67,7 +70,7 @@ export function AdminSafariForm({
   );
   const [selectedImage, setSelectedImage] = useState(initialValues.coverImage);
   const [imageAlt, setImageAlt] = useState(initialValues.imageAlt);
-  const selectedMedia = localMedia.find((item) => item.src === selectedImage);
+  const selectedMedia = mediaChoices.find((item) => item.value === selectedImage);
 
   function updateDay(
     index: number,
@@ -190,21 +193,21 @@ export function AdminSafariForm({
         />
       </label>
       <label className="field">
-        Cover image from the local library
+        Cover image from the media library
         <select
           name="coverImage"
           value={selectedImage}
           onChange={(event) => {
-            const image = localMedia.find(
-              (media) => media.src === event.target.value,
+            const image = mediaChoices.find(
+              (media) => media.value === event.target.value,
             );
             setSelectedImage(event.target.value);
             if (image) setImageAlt(image.alt);
           }}
           required
         >
-          {localMedia.map((media) => (
-            <option value={media.src} key={media.src}>
+          {mediaChoices.map((media) => (
+            <option value={media.value} key={media.value}>
               {media.category} · {media.alt}
             </option>
           ))}
@@ -223,7 +226,7 @@ export function AdminSafariForm({
       {selectedMedia && (
         <div className="admin-media-preview field-wide">
           <Image
-            src={selectedImage}
+            src={selectedMedia.src}
             alt={selectedMedia.alt}
             width={selectedMedia.width}
             height={selectedMedia.height}

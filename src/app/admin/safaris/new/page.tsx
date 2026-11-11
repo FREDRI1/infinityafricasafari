@@ -4,6 +4,7 @@ import { StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminSafariForm } from "@/components/admin-safari-form";
 import { requireStaff } from "@/lib/admin";
+import { getAdminMediaChoices } from "@/lib/admin-media";
 import { prisma } from "@/lib/prisma";
 import { saveSafari } from "@/app/admin/safaris/actions";
 
@@ -21,11 +22,14 @@ const contentRoles = [
 
 export default async function NewSafariPage() {
   const staff = await requireStaff(contentRoles);
-  const destinations = await prisma.destination.findMany({
-    where: { archivedAt: null },
-    select: { id: true, name: true, isPublished: true },
-    orderBy: { name: "asc" },
-  });
+  const [destinations, mediaChoices] = await Promise.all([
+    prisma.destination.findMany({
+      where: { archivedAt: null },
+      select: { id: true, name: true, isPublished: true },
+      orderBy: { name: "asc" },
+    }),
+    getAdminMediaChoices(),
+  ]);
 
   return (
     <main className="admin-shell page-width">
@@ -43,6 +47,7 @@ export default async function NewSafariPage() {
       {destinations.length ? (
         <AdminSafariForm
           destinations={destinations}
+          mediaChoices={mediaChoices}
           action={saveSafari}
         />
       ) : (

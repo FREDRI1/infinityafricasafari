@@ -5,6 +5,7 @@ import {
   type Destination,
   type Safari,
 } from "@/data/safaris";
+import { getPublicMediaUrl } from "@/lib/media-storage";
 
 export async function getPublicSafaris(): Promise<Safari[]> {
   if (!process.env.DATABASE_URL) return starterSafaris;
@@ -45,7 +46,7 @@ export async function getPublicSafaris(): Promise<Safari[]> {
     region: record.region ?? record.destination?.name ?? "East Africa",
     durationDays: record.durationDays,
     category: record.category,
-    image: record.coverImage ?? "",
+    image: record.coverImage ? getPublicMediaUrl(record.coverImage) : "",
     imageAlt: record.imageAlt ?? `${record.title} safari landscape`,
     summary: record.summary,
     highlights: record.highlights,
@@ -79,7 +80,9 @@ export async function getPublicDestinations(): Promise<Destination[]> {
     country: destination.country,
     summary: destination.summary,
     description: destination.description ?? destination.summary,
-    image: destination.heroImage ?? "/assets/images/destinations/wild-africa.jpg",
+    image: destination.heroImage
+      ? getPublicMediaUrl(destination.heroImage)
+      : "/assets/images/destinations/wild-africa.jpg",
     imageAlt: destination.heroImageAlt ?? `${destination.name} landscape`,
     seoTitle: destination.seoTitle,
     seoDescription: destination.seoDescription,
@@ -104,7 +107,9 @@ export async function getPublicDestinationBySlug(
     country: destination.country,
     summary: destination.summary,
     description: destination.description ?? destination.summary,
-    image: destination.heroImage ?? "/assets/images/destinations/wild-africa.jpg",
+    image: destination.heroImage
+      ? getPublicMediaUrl(destination.heroImage)
+      : "/assets/images/destinations/wild-africa.jpg",
     imageAlt: destination.heroImageAlt ?? `${destination.name} landscape`,
     seoTitle: destination.seoTitle,
     seoDescription: destination.seoDescription,

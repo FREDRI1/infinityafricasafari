@@ -4,7 +4,7 @@ import { Prisma, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { localMedia } from "@/data/media";
+import { isAdminMediaSource } from "@/lib/admin-media";
 import { requireStaff } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
@@ -20,10 +20,7 @@ const destinationSchema = z.object({
   country: z.string().trim().min(2).max(100),
   summary: z.string().trim().min(30).max(1500),
   description: z.string().trim().min(30).max(10000),
-  heroImage: z.string().refine(
-    (value) => localMedia.some((media) => media.src === value),
-    "Choose an image from the local media library.",
-  ),
+  heroImage: z.string().min(1).max(1000),
   heroImageAlt: z.string().trim().min(5).max(250),
   seoTitle: z.string().trim().max(70),
   seoDescription: z.string().trim().max(200),
@@ -62,6 +59,9 @@ export async function saveDestination(formData: FormData) {
     throw new Error(
       `Destination details are invalid: ${parsed.error.issues[0]?.message ?? "check the form."}`,
     );
+  }
+  if (!(await isAdminMediaSource(parsed.data.heroImage))) {
+    throw new Error("Choose an image from the media library.");
   }
 
   const destination = await prisma.$transaction(async (transaction) => {

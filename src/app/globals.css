@@ -2424,6 +2424,32 @@ h2 em,
   justify-self: start;
 }
 
+.media-upload-success {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid rgb(49 91 69 / 25%);
+  background: #edf4ee;
+  color: var(--forest);
+  font-size: 11px;
+}
+
+.media-upload-form .field small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.homepage-content-form {
+  margin-top: 25px;
+}
+
+.homepage-content-form .admin-pricing-editor + .admin-pricing-editor {
+  margin-top: 32px;
+}
+
+.homepage-content-form .admin-itinerary-day {
+  margin-top: 18px;
+}
+
 .admin-pricing-editor {
   padding-top: 16px;
   border-top: 1px solid var(--line);

@@ -7,6 +7,7 @@ import { AdminDestinationForm } from "@/components/admin-destination-form";
 import { saveDestination } from "@/app/admin/destinations/actions";
 import { requireStaff } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { getAdminMediaChoices } from "@/lib/admin-media";
 
 export const metadata: Metadata = {
   title: "Edit destination",
@@ -25,7 +26,10 @@ export default async function EditDestinationPage({
     StaffRole.CONTENT_EDITOR,
   ]);
   const { id } = await params;
-  const destination = await prisma.destination.findUnique({ where: { id } });
+  const [destination, mediaChoices] = await Promise.all([
+    prisma.destination.findUnique({ where: { id } }),
+    getAdminMediaChoices(),
+  ]);
   if (!destination) notFound();
 
   return (
@@ -42,6 +46,7 @@ export default async function EditDestinationPage({
         </Link>
       </div>
       <AdminDestinationForm
+        mediaChoices={mediaChoices}
         initialValues={{
           id: destination.id,
           name: destination.name,

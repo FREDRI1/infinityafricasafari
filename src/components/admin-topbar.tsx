@@ -57,7 +57,7 @@ const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
     items: [
       { label: "Media library", href: "/admin/media", icon: FileText },
       { label: "Blog", disabled: true, icon: FileText },
-      { label: "Website content", disabled: true, icon: Compass },
+      { label: "Website content", href: "/admin/content", icon: Compass },
     ],
   },
   {

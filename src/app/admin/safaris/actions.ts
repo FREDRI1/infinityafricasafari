@@ -4,7 +4,7 @@ import { Prisma, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { localMedia } from "@/data/media";
+import { isAdminMediaSource } from "@/lib/admin-media";
 import { requireStaff } from "@/lib/admin";
 import { hasOverlappingSeasonRanges, isValidSeasonRange } from "@/lib/pricing";
 import { prisma } from "@/lib/prisma";
@@ -29,10 +29,7 @@ const safariInputSchema = z.object({
   category: z.string().trim().min(2).max(60),
   region: z.string().trim().min(2).max(120),
   destinationId: z.string().min(1),
-  coverImage: z.string().refine(
-    (value) => localMedia.some((media) => media.src === value),
-    "Choose an image from the local media library.",
-  ),
+  coverImage: z.string().min(1).max(1000),
   imageAlt: z.string().trim().min(5).max(250),
   highlights: z.string().max(1000),
   isPublished: z.boolean(),
@@ -96,6 +93,9 @@ export async function saveSafari(formData: FormData) {
     throw new Error(
       `Safari details are invalid: ${parsed.error.issues[0]?.message ?? "check the form."}`,
     );
+  }
+  if (!(await isAdminMediaSource(parsed.data.coverImage))) {
+    throw new Error("Choose an image from the media library.");
   }
 
   let itinerary: z.infer<typeof itineraryDaySchema>[];

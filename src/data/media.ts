@@ -34,4 +34,25 @@ export const localMedia = [
     width: 2720,
     height: 3886,
   },
+  {
+    src: "/assets/images/excursions/kaya-kinondo.jpg",
+    alt: "Visitors walking beneath the canopy at Kaya Kinondo Sacred Forest",
+    category: "Excursion",
+    width: 960,
+    height: 600,
+  },
+  {
+    src: "/assets/images/excursions/malindi-reef.jpg",
+    alt: "Coral and sponges at Malindi Reef",
+    category: "Excursion",
+    width: 960,
+    height: 720,
+  },
+  {
+    src: "/assets/images/excursions/kenya-coast.jpg",
+    alt: "Kenyan coastline at Diani Beach",
+    category: "Excursion",
+    width: 960,
+    height: 1600,
+  },
 ] as const;

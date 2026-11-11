@@ -7,6 +7,7 @@ import { AdminSafariForm } from "@/components/admin-safari-form";
 import { requireStaff } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { saveSafari } from "@/app/admin/safaris/actions";
+import { getAdminMediaChoices } from "@/lib/admin-media";
 
 export const metadata: Metadata = {
   title: "Edit safari",
@@ -27,7 +28,7 @@ export default async function EditSafariPage({
 }) {
   const staff = await requireStaff(contentRoles);
   const { id } = await params;
-  const [safari, destinations] = await Promise.all([
+  const [safari, destinations, mediaChoices] = await Promise.all([
     prisma.safari.findUnique({
       where: { id },
       include: {
@@ -40,6 +41,7 @@ export default async function EditSafariPage({
       select: { id: true, name: true, isPublished: true },
       orderBy: { name: "asc" },
     }),
+    getAdminMediaChoices(),
   ]);
   if (!safari) notFound();
 
@@ -58,6 +60,7 @@ export default async function EditSafariPage({
       </div>
       <AdminSafariForm
         destinations={destinations}
+        mediaChoices={mediaChoices}
         initialValues={{
           id: safari.id,
           title: safari.title,
