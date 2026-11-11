@@ -11,6 +11,7 @@ test("video upload tokens are signed and scoped to their uploader", () => {
   try {
     const token = createVideoUploadToken({
       key: "uploads/1a2b3c4d-1234-1234-1234-123456789abc.mp4",
+      uploadId: "multipart-upload-id",
       fileName: "safari.mp4",
       bytes: 1024,
       category: "Video",
@@ -19,6 +20,7 @@ test("video upload tokens are signed and scoped to their uploader", () => {
     });
 
     assert.equal(verifyVideoUploadToken(token)?.userId, "staff-user-id");
+    assert.equal(verifyVideoUploadToken(token)?.uploadId, "multipart-upload-id");
     assert.equal(verifyVideoUploadToken(`${token}tampered`), null);
   } finally {
     if (originalSecret === undefined) delete process.env.AUTH_SECRET;

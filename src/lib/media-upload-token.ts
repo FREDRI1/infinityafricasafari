@@ -1,10 +1,12 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import { maxVideoUploadBytes } from "@/lib/media-upload";
 
 const uploadTokenSchema = z.object({
   key: z.string().regex(/^uploads\/[a-f0-9-]+\.mp4$/i),
+  uploadId: z.string().min(1).max(2048),
   fileName: z.string().min(1).max(255),
-  bytes: z.number().int().positive().max(100 * 1024 * 1024),
+  bytes: z.number().int().positive().max(maxVideoUploadBytes),
   category: z.string().min(1).max(40),
   altText: z.string().min(5).max(250),
   userId: z.string().min(1),
@@ -28,7 +30,7 @@ export function createVideoUploadToken(
 ) {
   const metadata = uploadTokenSchema.parse({
     ...input,
-    expiresAt: Date.now() + 15 * 60 * 1000,
+    expiresAt: Date.now() + 60 * 60 * 1000,
   });
   const payload = Buffer.from(JSON.stringify(metadata)).toString("base64url");
   return `${payload}.${sign(payload).toString("base64url")}`;

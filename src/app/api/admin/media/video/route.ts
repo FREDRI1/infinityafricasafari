@@ -4,11 +4,15 @@ import { Prisma, StaffRole } from "@prisma/client";
 import { z } from "zod";
 import { auth } from "@/auth";
 import {
-  createPresignedVideoUpload,
+  abortMultipartVideoUpload,
+  beginMultipartVideoUpload,
+  completeMultipartVideoUpload,
+  createPresignedVideoPartUpload,
   deleteMediaObject,
   getMediaObjectMetadata,
   getMissingMediaStorageEnvironment,
 } from "@/lib/media-storage";
+import { getVideoUploadPartCount } from "@/lib/media-upload";
 import {
   createVideoUploadToken,
   verifyVideoUploadToken,
@@ -32,15 +36,26 @@ const allowedCategories = new Set([
 const prepareSchema = z.object({
   fileName: z.string().trim().min(1).max(255),
   bytes: z.number().int().positive().max(100 * 1024 * 1024),
-  mimeType: z.literal("video/mp4"),
+  mimeType: z.enum(["video/mp4", "", "application/octet-stream"]),
   altText: z.string().trim().min(5).max(250),
   category: z.string().refine((value) => allowedCategories.has(value)),
 });
 const actionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("prepare"), metadata: prepareSchema }),
   z.object({
+    action: z.literal("sign-part"),
+    token: z.string().min(1).max(4096),
+    partNumber: z.number().int().positive().max(13),
+  }),
+  z.object({
     action: z.literal("complete"),
     token: z.string().min(1).max(4096),
+    parts: z.array(
+      z.object({
+        partNumber: z.number().int().positive().max(13),
+        etag: z.string().trim().min(1).max(256),
+      }),
+    ).min(1).max(13),
   }),
   z.object({
     action: z.literal("cancel"),
@@ -118,16 +133,8 @@ export async function POST(request: Request) {
   if (parsed.data.action === "prepare") {
     const metadata = parsed.data.metadata;
     const key = `uploads/${randomUUID()}.mp4`;
-    const token = createVideoUploadToken({
-      key,
-      fileName: safeFileName(metadata.fileName),
-      bytes: metadata.bytes,
-      category: metadata.category,
-      altText: metadata.altText,
-      userId: authorization.staff.id,
-    });
-
     let uploadStage = "checking storage configuration";
+    let uploadId: string | undefined;
     try {
       const missingEnvironment = getMissingMediaStorageEnvironment();
       if (missingEnvironment.length) {
@@ -138,22 +145,31 @@ export async function POST(request: Request) {
           { status: 503 },
         );
       }
-      const origin = request.headers.get("origin");
-      if (!origin) {
-        return NextResponse.json(
-          { error: "The upload origin could not be verified." },
-          { status: 403 },
-        );
-      }
-      uploadStage = "creating the secure upload link";
-      const presigned = await createPresignedVideoUpload(key);
+      uploadStage = "starting a resumable media upload";
+      uploadId = await beginMultipartVideoUpload(key);
+      const token = createVideoUploadToken({
+        key,
+        uploadId,
+        fileName: safeFileName(metadata.fileName),
+        bytes: metadata.bytes,
+        category: metadata.category,
+        altText: metadata.altText,
+        userId: authorization.staff.id,
+      });
       return NextResponse.json({
-        uploadUrl: presigned.uploadUrl,
-        headers: presigned.headers,
         uploadToken: token,
+        partSize: 8 * 1024 * 1024,
+        partCount: getVideoUploadPartCount(metadata.bytes),
       });
     } catch (error) {
       console.error("Could not prepare direct video upload.", error);
+      if (uploadId) {
+        try {
+          await abortMultipartVideoUpload(key, uploadId);
+        } catch (cleanupError) {
+          console.error("Could not clean up an unprepared multipart video upload.", cleanupError);
+        }
+      }
       if (error instanceof Error && error.name === "NoSuchBucket") {
         return NextResponse.json(
           { error: "The configured video media bucket is unavailable. Check the Neon storage bucket setup." },
@@ -197,6 +213,30 @@ export async function POST(request: Request) {
     );
   }
 
+  if (parsed.data.action === "sign-part") {
+    const partCount = getVideoUploadPartCount(metadata.bytes);
+    if (parsed.data.partNumber > partCount) {
+      return NextResponse.json(
+        { error: "The requested video part is outside this upload." },
+        { status: 400 },
+      );
+    }
+    try {
+      const uploadUrl = await createPresignedVideoPartUpload(
+        metadata.key,
+        metadata.uploadId,
+        parsed.data.partNumber,
+      );
+      return NextResponse.json({ uploadUrl });
+    } catch (error) {
+      console.error("Could not sign a video upload part.", error);
+      return NextResponse.json(
+        { error: "A secure upload link could not be created for this video part. Retry the upload." },
+        { status: 503 },
+      );
+    }
+  }
+
   if (parsed.data.action === "cancel") {
     const existing = await prisma.media.findUnique({
       where: { publicId: metadata.key },
@@ -209,7 +249,7 @@ export async function POST(request: Request) {
       );
     }
     try {
-      await deleteMediaObject(metadata.key);
+      await abortMultipartVideoUpload(metadata.key, metadata.uploadId);
       return NextResponse.json({ cancelled: true });
     } catch (error) {
       console.error("Could not clean up incomplete video upload.", error);
@@ -236,6 +276,26 @@ export async function POST(request: Request) {
   if (existing) return NextResponse.json({ media: existing });
 
   try {
+    const expectedPartCount = getVideoUploadPartCount(metadata.bytes);
+    const parts = parsed.data.parts;
+    if (
+      parts.length !== expectedPartCount ||
+      new Set(parts.map((part) => part.partNumber)).size !== expectedPartCount ||
+      parts.some((part, index) => part.partNumber !== index + 1)
+    ) {
+      return NextResponse.json(
+        { error: "The video upload is incomplete. Please retry the missing parts." },
+        { status: 400 },
+      );
+    }
+    await completeMultipartVideoUpload(
+      metadata.key,
+      metadata.uploadId,
+      parts.map(({ partNumber, etag }) => ({
+        PartNumber: partNumber,
+        ETag: etag,
+      })),
+    );
     const uploaded = await getMediaObjectMetadata(metadata.key);
     if (
       uploaded.bytes !== metadata.bytes ||

@@ -1,9 +1,14 @@
 import {
+  AbortMultipartUploadCommand,
+  CompleteMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
+  UploadPartCommand,
+  type CompletedPart,
 } from "@aws-sdk/client-s3";
 
 export const SITE_MEDIA_BUCKET = "site-media";
@@ -115,6 +120,70 @@ export async function createPresignedVideoUpload(key: string) {
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   };
+}
+
+export async function beginMultipartVideoUpload(key: string) {
+  const response = await getStorageClient().send(
+    new CreateMultipartUploadCommand({
+      Bucket: SITE_MEDIA_BUCKET,
+      Key: key,
+      ContentType: "video/mp4",
+      CacheControl: "public, max-age=31536000, immutable",
+    }),
+  );
+  if (!response.UploadId) {
+    throw new Error("Storage did not return a multipart upload identifier.");
+  }
+  return response.UploadId;
+}
+
+export async function createPresignedVideoPartUpload(
+  key: string,
+  uploadId: string,
+  partNumber: number,
+) {
+  const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+  return getSignedUrl(
+    getStorageClient(),
+    new UploadPartCommand({
+      Bucket: SITE_MEDIA_BUCKET,
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+    }),
+    { expiresIn: 15 * 60 },
+  );
+}
+
+export async function completeMultipartVideoUpload(
+  key: string,
+  uploadId: string,
+  parts: CompletedPart[],
+) {
+  await getStorageClient().send(
+    new CompleteMultipartUploadCommand({
+      Bucket: SITE_MEDIA_BUCKET,
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: { Parts: parts },
+    }),
+  );
+}
+
+export async function abortMultipartVideoUpload(key: string, uploadId: string) {
+  const client = getStorageClient();
+  try {
+    await client.send(
+      new AbortMultipartUploadCommand({
+        Bucket: SITE_MEDIA_BUCKET,
+        Key: key,
+        UploadId: uploadId,
+      }),
+    );
+  } catch (error) {
+    if (!(error instanceof Error) || error.name !== "NoSuchUpload") throw error;
+  }
+  await client.send(new DeleteObjectCommand({ Bucket: SITE_MEDIA_BUCKET, Key: key }));
 }
 
 export async function getMediaObjectMetadata(key: string) {
