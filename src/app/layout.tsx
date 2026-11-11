@@ -50,8 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>
-        <SiteChrome />
-        {children}
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
