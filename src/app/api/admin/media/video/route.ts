@@ -128,6 +128,7 @@ export async function POST(request: Request) {
       userId: authorization.staff.id,
     });
 
+    let uploadStage = "checking storage configuration";
     try {
       const missingEnvironment = getMissingMediaStorageEnvironment();
       if (missingEnvironment.length) {
@@ -145,7 +146,9 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
+      uploadStage = "configuring media storage CORS";
       await ensureMediaUploadCors(origin);
+      uploadStage = "creating the secure upload link";
       const presigned = await createPresignedVideoUpload(key);
       return NextResponse.json({
         uploadUrl: presigned.uploadUrl,
@@ -169,8 +172,21 @@ export async function POST(request: Request) {
           { status: 503 },
         );
       }
+      const errorName = error instanceof Error ? error.name : "UnknownError";
+      const status =
+        typeof error === "object" &&
+        error !== null &&
+        "$metadata" in error &&
+        typeof error.$metadata === "object" &&
+        error.$metadata !== null &&
+        "httpStatusCode" in error.$metadata &&
+        typeof error.$metadata.httpStatusCode === "number"
+          ? `, HTTP ${error.$metadata.httpStatusCode}`
+          : "";
       return NextResponse.json(
-        { error: "The video storage service could not prepare this upload. Check the application server logs for the storage error." },
+        {
+          error: `Video upload setup failed while ${uploadStage} (${errorName}${status}). Check the application server's Neon storage endpoint, credentials, and site-media bucket permissions.`,
+        },
         { status: 503 },
       );
     }
