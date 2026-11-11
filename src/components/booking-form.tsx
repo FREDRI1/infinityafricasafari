@@ -10,6 +10,7 @@ import {
   type BookingFormInput,
   type BookingFormOutput,
 } from "@/lib/booking-validation";
+import { findSeasonalRate, formatPrice, formatSeasonDate } from "@/lib/pricing";
 import type { Safari } from "@/data/safaris";
 
 type Props = {
@@ -51,9 +52,20 @@ export function BookingForm({ safaris, initialSafariSlug = "" }: Props) {
     control: form.control,
     name: "safariSlug",
   });
+  const selectedTravelDate = useWatch({
+    control: form.control,
+    name: "travelDate",
+  });
   const selectedSafari = safaris.find(
     (safari) => safari.slug === selectedSafariSlug,
   );
+  const selectedSeasonalPrice =
+    selectedSafari && selectedTravelDate
+      ? findSeasonalRate(
+          selectedSafari.seasonalPrices,
+          new Date(`${selectedTravelDate}T00:00:00.000Z`),
+        )
+      : undefined;
 
   async function submit(values: BookingFormOutput) {
     try {
@@ -158,6 +170,33 @@ export function BookingForm({ safaris, initialSafariSlug = "" }: Props) {
             />
           </label>
         </div>
+        {selectedSafari && (
+          <div className="booking-season-price" aria-live="polite">
+            {selectedSeasonalPrice ? (
+              <>
+                <strong>
+                  {selectedSeasonalPrice.seasonName}:{" "}
+                  {formatPrice(
+                    selectedSeasonalPrice.pricePerPerson,
+                    selectedSeasonalPrice.currency,
+                  )}{" "}
+                  per person
+                </strong>
+                <span>
+                  {formatSeasonDate(selectedSeasonalPrice.startMonth, selectedSeasonalPrice.startDay)}{" "}
+                  – {formatSeasonDate(selectedSeasonalPrice.endMonth, selectedSeasonalPrice.endDay)}
+                  {selectedSeasonalPrice.isEstimate ? " · Indicative estimate" : ""}. Final quote and
+                  availability are confirmed by our team.
+                </span>
+              </>
+            ) : (
+              <span>
+                Choose your preferred travel date to see its seasonal
+                per-person estimate. Final pricing is confirmed by our team.
+              </span>
+            )}
+          </div>
+        )}
       </section>
 
       <section className="form-section">

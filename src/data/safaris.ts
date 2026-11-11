@@ -10,6 +10,18 @@ export type Safari = {
   summary: string;
   highlights: string[];
   itinerary: { title: string; description: string }[];
+  seasonalPrices: SafariSeasonalPrice[];
+};
+
+export type SafariSeasonalPrice = {
+  seasonName: string;
+  startMonth: number;
+  startDay: number;
+  endMonth: number;
+  endDay: number;
+  pricePerPerson: string;
+  currency: string;
+  isEstimate: boolean;
 };
 
 export type Destination = {
@@ -37,6 +49,10 @@ export const safaris: Safari[] = [
     summary:
       "A thoughtful introduction to the open plains, guided game drives and quiet moments that make a safari unforgettable.",
     highlights: ["Private game drives", "A slower pace", "Time on the open plains"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "1800", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "2500", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "Arrive and settle in",
@@ -67,6 +83,10 @@ export const safaris: Safari[] = [
     summary:
       "A made-to-measure route through expansive landscapes, shaped around the season, your interests and preferred pace.",
     highlights: ["Open landscapes", "Flexible routing", "Tailored camp choices"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "3200", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "4500", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "A gentle beginning",
@@ -97,6 +117,10 @@ export const safaris: Safari[] = [
     summary:
       "A flexible wildlife-focused journey with room for the places, experiences and level of comfort that matter to you.",
     highlights: ["Expert local guiding", "Wildlife viewing", "Your choice of pace"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "2300", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "3100", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "Welcome to Kenya",
@@ -127,6 +151,10 @@ export const safaris: Safari[] = [
     summary:
       "A considered itinerary concept focused on wildlife and the landscapes that support it. Final experiences depend on availability.",
     highlights: ["Wildlife-focused days", "Local guiding", "Time to learn"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "1450", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "1950", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "Plan your arrival",
@@ -157,6 +185,10 @@ export const safaris: Safari[] = [
     summary:
       "A flexible journey concept for travellers drawn to quieter landscapes, guided time outdoors and unhurried days.",
     highlights: ["A gentler pace", "Local guiding", "Flexible experiences"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "2800", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "3900", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "Arrive and find your rhythm",
@@ -187,6 +219,10 @@ export const safaris: Safari[] = [
     summary:
       "A tailored starting point for a nature-led journey, with experiences, permits and availability discussed in advance.",
     highlights: ["Nature-led planning", "Personal itinerary", "Advance availability checks"],
+    seasonalPrices: [
+      { seasonName: "Green season", startMonth: 11, startDay: 1, endMonth: 5, endDay: 31, pricePerPerson: "2600", currency: "USD", isEstimate: true },
+      { seasonName: "Peak season", startMonth: 6, startDay: 1, endMonth: 10, endDay: 31, pricePerPerson: "3600", currency: "USD", isEstimate: true },
+    ],
     itinerary: [
       {
         title: "A warm welcome",

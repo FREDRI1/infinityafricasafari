@@ -84,6 +84,18 @@ async function seed() {
             position: 0,
           },
         },
+        seasonalPrices: {
+          create: safari.seasonalPrices.map((price) => ({
+            seasonName: price.seasonName,
+            startMonth: price.startMonth,
+            startDay: price.startDay,
+            endMonth: price.endMonth,
+            endDay: price.endDay,
+            pricePerPerson: price.pricePerPerson,
+            currency: price.currency,
+            isEstimate: price.isEstimate,
+          })),
+        },
       },
       select: { id: true },
     });

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Check, Clock3, MapPin } from "lucide-react";
 import { getPublicSafariBySlug } from "@/lib/catalog";
+import { formatPrice, formatSeasonDate } from "@/lib/pricing";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -104,6 +105,35 @@ export default async function SafariDetailPage({ params }: Props) {
           <div className="detail-aside-card">
             <span className="eyebrow">Designed around you</span>
             <h2>Let&apos;s make it <em>yours.</em></h2>
+            <div className="detail-seasonal-pricing">
+              <span className="eyebrow">Seasonal price · per person</span>
+              {safari.seasonalPrices.length ? (
+                <ul>
+                  {safari.seasonalPrices.map((price) => (
+                    <li key={price.seasonName}>
+                      <span>
+                        <strong>{price.seasonName}</strong>
+                        <small>
+                          {formatSeasonDate(price.startMonth, price.startDay)} –{" "}
+                          {formatSeasonDate(price.endMonth, price.endDay)}
+                        </small>
+                      </span>
+                      <span className="detail-price-value">
+                        {formatPrice(price.pricePerPerson, price.currency)}
+                        {price.isEstimate && <small>Estimate</small>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="detail-price-unavailable">Price on request</p>
+              )}
+              <p className="detail-price-note">
+                Indicative per-person pricing only. Final quote depends on your
+                travel dates, availability, accommodation and confirmed
+                itinerary. No payment is taken online.
+              </p>
+            </div>
             <p>
               Share your dates and travel style. Our team will check
               availability and prepare a personal quote.

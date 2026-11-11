@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, Check } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { formatPrice, getSeasonalPriceSnapshot } from "@/lib/pricing";
 
 export const metadata: Metadata = {
   title: "Request received",
@@ -42,6 +43,7 @@ export default async function BookingConfirmationPage({
     safariSnapshot && typeof safariSnapshot.title === "string"
       ? safariSnapshot.title
       : "Your requested safari";
+  const seasonalPrice = getSeasonalPriceSnapshot(booking.safariSnapshot);
 
   return (
     <main className="confirmation-page page-width">
@@ -92,6 +94,15 @@ export default async function BookingConfirmationPage({
             <dt>Request status</dt>
             <dd>{booking.status.replaceAll("_", " ").toLowerCase()}</dd>
           </div>
+          {seasonalPrice && (
+            <div>
+              <dt>{seasonalPrice.seasonName} rate per person</dt>
+              <dd>
+                {formatPrice(seasonalPrice.pricePerPerson, seasonalPrice.currency)}
+                {seasonalPrice.isEstimate ? " · estimate" : ""}
+              </dd>
+            </div>
+          )}
         </dl>
         <p className="confirmation-note">
           This is a request, not a confirmed reservation. No payment has been

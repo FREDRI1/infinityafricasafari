@@ -26,8 +26,9 @@ export default async function SafarisPage({
           for <em>somewhere wild.</em>
         </h1>
         <p>
-          Browse a few journey ideas, then tell us what you would make your own.
-          Final routes, availability and pricing are agreed with our team.
+          Explore journey ideas and indicative seasonal prices, then tell us
+          what you would make your own. Final routes, availability and quotes
+          are confirmed with our team.
         </p>
       </section>
       <section className="catalog-section page-width">

@@ -21,6 +21,7 @@ import {
   updateBookingStatus,
   verifyManualPayment,
 } from "@/app/admin/bookings/actions";
+import { formatPrice, getSeasonalPriceSnapshot } from "@/lib/pricing";
 
 type Props = {
   params: Promise<{ reference: string }>;
@@ -78,6 +79,7 @@ export default async function AdminBookingDetailPage({
   if (!booking) notFound();
 
   const safariTitle = getSnapshotTitle(booking.safariSnapshot);
+  const seasonalPrice = getSeasonalPriceSnapshot(booking.safariSnapshot);
   const verifiedPayments = booking.payments.filter((payment) => payment.verified);
   const amountPaid = verifiedPayments.reduce(
     (total, payment) => total.plus(payment.amount),
@@ -226,6 +228,17 @@ export default async function AdminBookingDetailPage({
                 <dt>Accommodation</dt>
                 <dd>{booking.accommodationPreference || "To be discussed"}</dd>
               </div>
+              {seasonalPrice && (
+                <div>
+                  <dt>
+                    {seasonalPrice.seasonName} rate per person
+                    {seasonalPrice.isEstimate ? " · estimate" : ""}
+                  </dt>
+                  <dd>
+                    {formatPrice(seasonalPrice.pricePerPerson, seasonalPrice.currency)}
+                  </dd>
+                </div>
+              )}
               <div className="admin-detail-wide">
                 <dt>Special requirements</dt>
                 <dd>{booking.specialRequirements || "None provided"}</dd>

@@ -19,6 +19,18 @@ export type SafariEditorValues = {
   highlights: string[];
   isPublished: boolean;
   itinerary: { title: string; description: string }[];
+  seasonalPrices: SafariSeasonalPriceEditorValue[];
+};
+
+export type SafariSeasonalPriceEditorValue = {
+  seasonName: string;
+  startMonth: number;
+  startDay: number;
+  endMonth: number;
+  endDay: number;
+  pricePerPerson: string;
+  currency: string;
+  isEstimate: boolean;
 };
 
 type Props = {
@@ -41,6 +53,7 @@ const emptyValues: SafariEditorValues = {
   highlights: [],
   isPublished: false,
   itinerary: [{ title: "", description: "" }],
+  seasonalPrices: [],
 };
 
 export function AdminSafariForm({
@@ -49,6 +62,9 @@ export function AdminSafariForm({
   action,
 }: Props) {
   const [itinerary, setItinerary] = useState(initialValues.itinerary);
+  const [seasonalPrices, setSeasonalPrices] = useState(
+    initialValues.seasonalPrices,
+  );
   const [selectedImage, setSelectedImage] = useState(initialValues.coverImage);
   const [imageAlt, setImageAlt] = useState(initialValues.imageAlt);
   const selectedMedia = localMedia.find((item) => item.src === selectedImage);
@@ -61,6 +77,18 @@ export function AdminSafariForm({
     setItinerary((days) =>
       days.map((day, dayIndex) =>
         dayIndex === index ? { ...day, [key]: value } : day,
+      ),
+    );
+  }
+
+  function updateSeasonalPrice<K extends keyof SafariSeasonalPriceEditorValue>(
+    index: number,
+    key: K,
+    value: SafariSeasonalPriceEditorValue[K],
+  ) {
+    setSeasonalPrices((prices) =>
+      prices.map((price, priceIndex) =>
+        priceIndex === index ? { ...price, [key]: value } : price,
       ),
     );
   }
@@ -205,6 +233,165 @@ export function AdminSafariForm({
           </span>
         </div>
       )}
+      <section className="admin-pricing-editor field-wide">
+        <div className="admin-section-heading">
+          <div>
+            <span className="eyebrow">Per-person estimates · USD</span>
+            <h2>Seasonal pricing</h2>
+          </div>
+          <button
+            className="button button-outline button-small"
+            type="button"
+            onClick={() =>
+              setSeasonalPrices((prices) => [
+                ...prices,
+                {
+                  seasonName: "",
+                  startMonth: 1,
+                  startDay: 1,
+                  endMonth: 12,
+                  endDay: 31,
+                  pricePerPerson: "",
+                  currency: "USD",
+                  isEstimate: true,
+                },
+              ])
+            }
+          >
+            Add season
+          </button>
+        </div>
+        <p className="admin-pricing-help">
+          Set the date range and per-person price for each season. Estimates
+          are clearly identified to guests. Replace them with confirmed rates
+          when available.
+        </p>
+        <input
+          type="hidden"
+          name="seasonalPrices"
+          value={JSON.stringify(seasonalPrices)}
+        />
+        {seasonalPrices.length ? (
+          <div className="admin-pricing-list">
+            {seasonalPrices.map((price, index) => (
+              <fieldset className="admin-pricing-row" key={`${price.seasonName}-${index}`}>
+                <legend>Season {index + 1}</legend>
+                <label className="field">
+                  Season name
+                  <input
+                    value={price.seasonName}
+                    onChange={(event) =>
+                      updateSeasonalPrice(index, "seasonName", event.target.value)
+                    }
+                    maxLength={60}
+                    placeholder="Peak season"
+                    required
+                  />
+                </label>
+                <label className="field">
+                  Price per person (USD)
+                  <input
+                    type="number"
+                    min="1"
+                    max="10000000"
+                    step="0.01"
+                    value={price.pricePerPerson}
+                    onChange={(event) =>
+                      updateSeasonalPrice(index, "pricePerPerson", event.target.value)
+                    }
+                    required
+                  />
+                </label>
+                <div className="admin-season-date-fields">
+                  <span>Valid travel dates</span>
+                  <label className="field">
+                    Start month
+                    <input
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={price.startMonth}
+                      onChange={(event) =>
+                        updateSeasonalPrice(index, "startMonth", Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                  <label className="field">
+                    Day
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={price.startDay}
+                      onChange={(event) =>
+                        updateSeasonalPrice(index, "startDay", Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                  <span className="admin-season-date-separator">to</span>
+                  <label className="field">
+                    End month
+                    <input
+                      type="number"
+                      min="1"
+                      max="12"
+                      value={price.endMonth}
+                      onChange={(event) =>
+                        updateSeasonalPrice(index, "endMonth", Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                  <label className="field">
+                    Day
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      value={price.endDay}
+                      onChange={(event) =>
+                        updateSeasonalPrice(index, "endDay", Number(event.target.value))
+                      }
+                      required
+                    />
+                  </label>
+                </div>
+                <label className="publish-toggle admin-estimate-toggle">
+                  <input
+                    type="checkbox"
+                    checked={price.isEstimate}
+                    onChange={(event) =>
+                      updateSeasonalPrice(index, "isEstimate", event.target.checked)
+                    }
+                  />
+                  <span>
+                    <strong>Indicative estimate</strong>
+                    <small>Turn off only when this is a confirmed price.</small>
+                  </span>
+                </label>
+                <button
+                  className="text-link remove-day"
+                  type="button"
+                  onClick={() =>
+                    setSeasonalPrices((prices) =>
+                      prices.filter((_, priceIndex) => priceIndex !== index),
+                    )
+                  }
+                >
+                  Remove season
+                </button>
+              </fieldset>
+            ))}
+          </div>
+        ) : (
+          <p className="admin-pricing-empty">
+            No seasonal rates yet. Add at least one rate before publishing this
+            journey.
+          </p>
+        )}
+      </section>
       <div className="admin-itinerary-editor field-wide">
         <div className="admin-section-heading">
           <div>
@@ -280,8 +467,8 @@ export function AdminSafariForm({
         </span>
       </label>
       <p className="admin-warning field-wide">
-        This editor does not set prices. Availability and final pricing are
-        confirmed with each customer.
+        Published prices are per person and do not confirm availability.
+        Final itineraries and quotes are confirmed with each customer.
       </p>
       <button className="button button-dark field-wide">
         Save safari

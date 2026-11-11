@@ -34,7 +34,7 @@ export default async function NewSafariPage() {
         <div>
           <span className="eyebrow">Content studio</span>
           <h1>Create a safari</h1>
-          <p>Draft a journey outline. Availability and pricing are agreed later.</p>
+          <p>Add seasonal per-person prices and manage when rates apply.</p>
         </div>
         <Link className="button button-outline" href="/admin/safaris">
           All safaris

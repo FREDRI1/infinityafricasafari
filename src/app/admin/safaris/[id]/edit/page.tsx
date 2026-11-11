@@ -30,7 +30,10 @@ export default async function EditSafariPage({
   const [safari, destinations] = await Promise.all([
     prisma.safari.findUnique({
       where: { id },
-      include: { itineraryDays: { orderBy: { dayNumber: "asc" } } },
+      include: {
+        itineraryDays: { orderBy: { dayNumber: "asc" } },
+        seasonalPrices: { orderBy: [{ startMonth: "asc" }, { startDay: "asc" }] },
+      },
     }),
     prisma.destination.findMany({
       where: { archivedAt: null },
@@ -69,6 +72,16 @@ export default async function EditSafariPage({
           imageAlt: safari.imageAlt ?? "",
           highlights: safari.highlights,
           isPublished: safari.isPublished,
+          seasonalPrices: safari.seasonalPrices.map((price) => ({
+            seasonName: price.seasonName,
+            startMonth: price.startMonth,
+            startDay: price.startDay,
+            endMonth: price.endMonth,
+            endDay: price.endDay,
+            pricePerPerson: price.pricePerPerson.toString(),
+            currency: price.currency,
+            isEstimate: price.isEstimate,
+          })),
           itinerary: safari.itineraryDays.map((day) => ({
             title: day.title,
             description: day.description,

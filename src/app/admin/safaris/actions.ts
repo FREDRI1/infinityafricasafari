@@ -6,7 +6,19 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { localMedia } from "@/data/media";
 import { requireStaff } from "@/lib/admin";
+import { hasOverlappingSeasonRanges, isValidSeasonRange } from "@/lib/pricing";
 import { prisma } from "@/lib/prisma";
+
+const seasonalPriceSchema = z.object({
+  seasonName: z.string().trim().min(2).max(60),
+  startMonth: z.coerce.number().int().min(1).max(12),
+  startDay: z.coerce.number().int().min(1).max(31),
+  endMonth: z.coerce.number().int().min(1).max(12),
+  endDay: z.coerce.number().int().min(1).max(31),
+  pricePerPerson: z.coerce.number().positive().max(10_000_000),
+  currency: z.literal("USD"),
+  isEstimate: z.boolean(),
+});
 
 const safariInputSchema = z.object({
   title: z.string().trim().min(3).max(120),
@@ -24,6 +36,7 @@ const safariInputSchema = z.object({
   imageAlt: z.string().trim().min(5).max(250),
   highlights: z.string().max(1000),
   isPublished: z.boolean(),
+  seasonalPrices: z.array(seasonalPriceSchema).max(12),
 });
 
 const itineraryDaySchema = z.object({
@@ -70,6 +83,14 @@ export async function saveSafari(formData: FormData) {
     imageAlt: value(formData, "imageAlt"),
     highlights: value(formData, "highlights"),
     isPublished: isChecked(formData, "isPublished"),
+    seasonalPrices: (() => {
+      try {
+        const parsed: unknown = JSON.parse(value(formData, "seasonalPrices"));
+        return parsed;
+      } catch {
+        throw new Error("Seasonal prices could not be read. Review the pricing section.");
+      }
+    })(),
   });
   if (!parsed.success) {
     throw new Error(
@@ -110,6 +131,21 @@ export async function saveSafari(formData: FormData) {
   }
   if (parsed.data.isPublished && !destination.isPublished) {
     throw new Error("Publish the destination before publishing this safari.");
+  }
+  const prices = parsed.data.seasonalPrices;
+  for (const price of prices) {
+    if (!isValidSeasonRange(price)) {
+      throw new Error(`The date range for "${price.seasonName}" is not valid.`);
+    }
+  }
+  if (new Set(prices.map((price) => price.seasonName.toLocaleLowerCase())).size !== prices.length) {
+    throw new Error("Each seasonal rate must have a unique season name.");
+  }
+  if (hasOverlappingSeasonRanges(prices)) {
+    throw new Error("Seasonal date ranges cannot overlap.");
+  }
+  if (parsed.data.isPublished && prices.length === 0) {
+    throw new Error("Add at least one seasonal price before publishing this safari.");
   }
 
   const id = rawId || undefined;
@@ -194,6 +230,25 @@ export async function saveSafari(formData: FormData) {
       });
     }
 
+    await transaction.safariSeasonPrice.deleteMany({
+      where: { safariId: safari.id },
+    });
+    if (prices.length) {
+      await transaction.safariSeasonPrice.createMany({
+        data: prices.map((price) => ({
+          safariId: safari.id,
+          seasonName: price.seasonName,
+          startMonth: price.startMonth,
+          startDay: price.startDay,
+          endMonth: price.endMonth,
+          endDay: price.endDay,
+          pricePerPerson: new Prisma.Decimal(price.pricePerPerson),
+          currency: price.currency,
+          isEstimate: price.isEstimate,
+        })),
+      });
+    }
+
     await transaction.auditLog.create({
       data: {
         actorId: staff.id,
@@ -203,6 +258,16 @@ export async function saveSafari(formData: FormData) {
         details: {
           slug: safari.slug,
           published: parsed.data.isPublished,
+          seasonalPrices: prices.map((price) => ({
+            seasonName: price.seasonName,
+            startMonth: price.startMonth,
+            startDay: price.startDay,
+            endMonth: price.endMonth,
+            endDay: price.endDay,
+            pricePerPerson: price.pricePerPerson.toFixed(2),
+            currency: price.currency,
+            isEstimate: price.isEstimate,
+          })),
         } satisfies Prisma.InputJsonObject,
       },
     });

@@ -2,8 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Clock3, MapPin } from "lucide-react";
 import type { Safari } from "@/data/safaris";
+import { formatPrice } from "@/lib/pricing";
 
 export function SafariCard({ safari }: { safari: Safari }) {
+  const startingPrice = safari.seasonalPrices
+    .map((price) => Number(price.pricePerPerson))
+    .filter(Number.isFinite)
+    .sort((left, right) => left - right)[0];
+  const currency = safari.seasonalPrices[0]?.currency ?? "USD";
+
   return (
     <article className="safari-card">
       <Link
@@ -33,6 +40,12 @@ export function SafariCard({ safari }: { safari: Safari }) {
         <h3>
           <Link href={`/safaris/${safari.slug}`}>{safari.title}</Link>
         </h3>
+        {startingPrice !== undefined && (
+          <div className="safari-card-price">
+            <strong>From {formatPrice(startingPrice, currency)} <span>per person</span></strong>
+            <small>Indicative estimate · varies by season</small>
+          </div>
+        )}
         <p>{safari.summary}</p>
         <Link className="text-link" href={`/safaris/${safari.slug}`}>
           Explore this journey <ArrowUpRight size={16} aria-hidden="true" />

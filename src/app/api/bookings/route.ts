@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { getPublicSafariBySlug } from "@/lib/catalog";
 import { sendBookingEmails } from "@/lib/booking-email";
 import { bookingRequestSchema } from "@/lib/booking-validation";
+import { findSeasonalRate } from "@/lib/pricing";
 import { prisma } from "@/lib/prisma";
 
 function generateReference() {
@@ -150,7 +151,21 @@ export async function POST(request: Request) {
         isPublished: true,
         archivedAt: null,
       },
-      select: { id: true },
+      select: {
+        id: true,
+        seasonalPrices: {
+          select: {
+            seasonName: true,
+            startMonth: true,
+            startDay: true,
+            endMonth: true,
+            endDay: true,
+            pricePerPerson: true,
+            currency: true,
+            isEstimate: true,
+          },
+        },
+      },
     });
     if (!databaseSafari) {
       return NextResponse.json(
@@ -158,6 +173,10 @@ export async function POST(request: Request) {
         { status: 409 },
       );
     }
+    const applicablePrice = findSeasonalRate(
+      databaseSafari.seasonalPrices,
+      new Date(`${values.travelDate}T00:00:00.000Z`),
+    );
 
     const existing = await prisma.booking.findUnique({
       where: { submissionId: values.submissionId },
@@ -216,6 +235,14 @@ export async function POST(request: Request) {
             durationDays: safari.durationDays,
             category: safari.category,
             summary: safari.summary,
+            seasonalPrice: applicablePrice
+              ? {
+                  seasonName: applicablePrice.seasonName,
+                  pricePerPerson: applicablePrice.pricePerPerson.toString(),
+                  currency: applicablePrice.currency,
+                  isEstimate: applicablePrice.isEstimate,
+                }
+              : null,
           } satisfies Prisma.InputJsonObject,
           customerSnapshot: {
             fullName: values.fullName,

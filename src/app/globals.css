@@ -606,6 +606,29 @@ h2 em,
   line-height: 1.75;
 }
 
+.safari-card-price {
+  display: grid;
+  gap: 2px;
+  margin: 12px 0 7px;
+}
+
+.safari-card-price strong {
+  color: #244b38;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.safari-card-price strong span {
+  color: #70766e;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.safari-card-price small {
+  color: #8a806b;
+  font-size: 8px;
+}
+
 .editorial-note {
   margin: 19px 0 0;
   color: #777a72;
@@ -1135,6 +1158,77 @@ h2 em,
   font-size: 31px;
 }
 
+.detail-seasonal-pricing {
+  margin: 20px 0;
+  padding: 16px 0;
+  border-top: 1px solid #dcd5c7;
+  border-bottom: 1px solid #dcd5c7;
+}
+
+.detail-seasonal-pricing > .eyebrow {
+  display: block;
+  margin-bottom: 11px;
+}
+
+.detail-seasonal-pricing ul {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-seasonal-pricing li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgb(23 63 53 / 9%);
+  background: rgb(255 255 255 / 54%);
+}
+
+.detail-seasonal-pricing li > span:first-child,
+.detail-price-value {
+  display: grid;
+  gap: 2px;
+}
+
+.detail-seasonal-pricing li strong {
+  color: #32473b;
+  font-size: 10px;
+  font-weight: 680;
+  text-transform: capitalize;
+}
+
+.detail-seasonal-pricing li small {
+  color: #7c8076;
+  font-size: 8px;
+}
+
+.detail-price-value {
+  justify-items: end;
+  color: #1d563c;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.detail-price-value small {
+  color: #98762e !important;
+  font-size: 8px !important;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.detail-price-note,
+.detail-price-unavailable {
+  margin: 11px 0 0;
+  color: #71766e;
+  font-size: 9px;
+  line-height: 1.65;
+}
+
 .detail-aside-card > p {
   margin-bottom: 18px;
 }
@@ -1192,6 +1286,26 @@ h2 em,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.booking-season-price {
+  display: grid;
+  gap: 4px;
+  margin-top: 15px;
+  padding: 12px 14px;
+  border: 1px solid #ded9c8;
+  background: #f7f5ed;
+}
+
+.booking-season-price strong {
+  color: var(--forest);
+  font-size: 11px;
+}
+
+.booking-season-price span {
+  color: #73776e;
+  font-size: 9px;
+  line-height: 1.6;
 }
 
 .field {
@@ -2132,6 +2246,84 @@ h2 em,
   justify-self: start;
 }
 
+.admin-pricing-editor {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.admin-pricing-editor .admin-section-heading {
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.admin-pricing-editor .admin-section-heading h2 {
+  margin-top: 5px;
+  color: var(--forest);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 23px;
+}
+
+.admin-pricing-help,
+.admin-pricing-empty {
+  margin: 0 0 14px;
+  color: #70756d;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.admin-pricing-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-pricing-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+}
+
+.admin-pricing-row legend {
+  padding-inline: 5px;
+  color: var(--forest);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.admin-pricing-row .field {
+  font-size: 9px;
+}
+
+.admin-season-date-fields {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+}
+
+.admin-season-date-fields > span:first-child {
+  grid-column: 1 / -1;
+  color: #5d675e;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.admin-season-date-fields .field input {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-season-date-separator {
+  display: none;
+}
+
+.admin-estimate-toggle {
+  grid-column: 1 / -1;
+  padding: 9px 11px;
+}
+
 .admin-media-preview {
   display: flex;
   align-items: center;
@@ -2871,6 +3063,26 @@ h2 em,
   }
 
   .admin-content-form .field-wide {
+    grid-column: auto;
+  }
+
+  .admin-pricing-editor {
+    grid-column: 1 / -1;
+  }
+
+  .admin-pricing-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-season-date-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-season-date-fields > span:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .admin-estimate-toggle {
     grid-column: auto;
   }
 

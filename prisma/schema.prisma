@@ -157,12 +157,32 @@ model Safari {
   destination    Destination?   @relation(fields: [destinationId], references: [id], onDelete: SetNull)
   images         SafariImage[]
   itineraryDays  ItineraryDay[]
+  seasonalPrices SafariSeasonPrice[]
   bookings       Booking[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   @@index([isPublished, archivedAt])
   @@index([destinationId])
+}
+
+model SafariSeasonPrice {
+  id            String   @id @default(cuid())
+  safariId      String
+  seasonName    String
+  startMonth    Int
+  startDay      Int
+  endMonth      Int
+  endDay        Int
+  pricePerPerson Decimal @db.Decimal(10, 2)
+  currency      String   @default("USD")
+  isEstimate    Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  safari        Safari   @relation(fields: [safariId], references: [id], onDelete: Cascade)
+
+  @@unique([safariId, seasonName])
+  @@index([safariId, startMonth, startDay])
 }
 
 model SafariImage {

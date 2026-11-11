@@ -21,6 +21,19 @@ export async function getPublicSafaris(): Promise<Safari[]> {
     include: {
       destination: { select: { name: true, country: true } },
       itineraryDays: { orderBy: { dayNumber: "asc" } },
+      seasonalPrices: {
+        orderBy: [{ startMonth: "asc" }, { startDay: "asc" }],
+        select: {
+          seasonName: true,
+          startMonth: true,
+          startDay: true,
+          endMonth: true,
+          endDay: true,
+          pricePerPerson: true,
+          currency: true,
+          isEstimate: true,
+        },
+      },
     },
     orderBy: { updatedAt: "desc" },
   });
@@ -39,6 +52,10 @@ export async function getPublicSafaris(): Promise<Safari[]> {
     itinerary: record.itineraryDays.map((day) => ({
       title: day.title,
       description: day.description,
+    })),
+    seasonalPrices: record.seasonalPrices.map((price) => ({
+      ...price,
+      pricePerPerson: price.pricePerPerson.toString(),
     })),
   }));
 }
