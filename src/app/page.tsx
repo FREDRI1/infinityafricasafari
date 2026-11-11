@@ -50,12 +50,12 @@ export default async function Home() {
         <div className="page-width">
           <div className="section-heading destination-heading">
             <div>
-              <span className="eyebrow">Places with a pulse</span>
-              <h2>East Africa, <em>open to you.</em></h2>
+              <span className="eyebrow">DESTINATIONS & EXPERIENCES</span>
+              <h2>Discover East Africa, <em>one journey at a time.</em></h2>
             </div>
             <p>
-              Four countries. Countless ways to slow down, look closer and
-              travel well.
+              Four extraordinary countries. Curated journeys, unforgettable safaris and authentic 
+              experiences shaped by the spirit of East Africa.
             </p>
           </div>
           <div className="destination-grid">
