@@ -1,12 +1,9 @@
 import {
   DeleteObjectCommand,
   GetObjectCommand,
-  GetBucketCorsCommand,
   HeadObjectCommand,
-  PutBucketCorsCommand,
   PutObjectCommand,
   S3Client,
-  type CORSRule,
 } from "@aws-sdk/client-s3";
 
 export const SITE_MEDIA_BUCKET = "site-media";
@@ -118,53 +115,6 @@ export async function createPresignedVideoUpload(key: string) {
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   };
-}
-
-export async function ensureMediaUploadCors(origin: string) {
-  const client = getStorageClient();
-  let rules: CORSRule[] = [];
-  try {
-    const response = await client.send(
-      new GetBucketCorsCommand({ Bucket: SITE_MEDIA_BUCKET }),
-    );
-    rules = response.CORSRules ?? [];
-  } catch (error) {
-    if (
-      !(error instanceof Error) ||
-      !["NoSuchCORSConfiguration", "NotFound"].includes(error.name)
-    ) {
-      throw error;
-    }
-  }
-
-  const hasUploadRule = rules.some(
-    (rule) =>
-      rule.AllowedMethods?.includes("PUT") &&
-      (rule.AllowedOrigins?.includes(origin) ||
-        rule.AllowedOrigins?.includes("*")) &&
-      (rule.AllowedHeaders?.includes("*") ||
-        (rule.AllowedHeaders?.includes("content-type") &&
-          rule.AllowedHeaders?.includes("cache-control"))),
-  );
-  if (hasUploadRule) return;
-
-  await client.send(
-    new PutBucketCorsCommand({
-      Bucket: SITE_MEDIA_BUCKET,
-      CORSConfiguration: {
-        CORSRules: [
-          ...rules,
-          {
-            AllowedOrigins: [origin],
-            AllowedMethods: ["PUT"],
-            AllowedHeaders: ["content-type", "cache-control"],
-            ExposeHeaders: ["ETag"],
-            MaxAgeSeconds: 3600,
-          },
-        ],
-      },
-    }),
-  );
 }
 
 export async function getMediaObjectMetadata(key: string) {

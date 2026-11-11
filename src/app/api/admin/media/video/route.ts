@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import {
   createPresignedVideoUpload,
   deleteMediaObject,
-  ensureMediaUploadCors,
   getMediaObjectMetadata,
   getMissingMediaStorageEnvironment,
 } from "@/lib/media-storage";
@@ -146,8 +145,6 @@ export async function POST(request: Request) {
           { status: 403 },
         );
       }
-      uploadStage = "configuring media storage CORS";
-      await ensureMediaUploadCors(origin);
       uploadStage = "creating the secure upload link";
       const presigned = await createPresignedVideoUpload(key);
       return NextResponse.json({
