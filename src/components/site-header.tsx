@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, Menu, UserRound, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 
 const links = [
   { href: "/safaris", label: "Explore safaris" },
@@ -42,15 +42,6 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-
-        <Link
-          href="/admin/login"
-          className="header-admin-link"
-          aria-label="Staff sign in"
-          title="Staff sign in"
-        >
-          <UserRound size={19} aria-hidden="true" />
-        </Link>
 
         <Link className="button button-dark header-cta" href="/booking">
           Plan your safari <ArrowUpRight size={16} aria-hidden="true" />
