@@ -7,8 +7,8 @@ import {
   Clock3,
   Heart,
   Leaf,
-  MapPin,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import { SafariSearch } from "@/components/safari-search";
 import { getPublicDestinations } from "@/lib/catalog";
@@ -37,6 +37,27 @@ const excursions = [
     price: "$90",
     image: "/assets/images/excursions/kenya-coast.jpg",
     imageAlt: "Kenyan coastline at Diani Beach, shown as illustrative coastal photography",
+  },
+];
+
+const guestReviews = [
+  {
+    quote:
+      "An absolutely incredible experience! The guides were so knowledgeable and the accommodations were top-notch. Highly recommend!",
+    name: "Sarah Jenkins",
+    country: "United Kingdom",
+  },
+  {
+    quote:
+      "We saw the big five on our second day! The attention to detail in planning our itinerary made this trip completely stress-free.",
+    name: "Michael Chen",
+    country: "USA",
+  },
+  {
+    quote:
+      "Infinity Africa Safari provided a perfect balance of adventure and relaxation. The coastal extension after the safari was magical.",
+    name: "Elena Rossi",
+    country: "Italy",
   },
 ];
 
@@ -256,28 +277,37 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="closing-section" id="contact">
-        <Image
-          src="/assets/images/destinations/wild-africa.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-        />
-        <span className="closing-overlay" />
-        <div className="closing-content">
-          <span className="eyebrow eyebrow-light">Your journey begins here</span>
-          <h2>
-            Come for the wild.
-            <br />
-            <em>Leave with a story.</em>
-          </h2>
-          <p>Share a few details. We&apos;ll take it from there, together.</p>
-          <Link className="button button-gold" href="/booking">
-            Plan your safari <ArrowUpRight size={17} aria-hidden="true" />
-          </Link>
-          <span className="closing-location">
-            <MapPin size={14} aria-hidden="true" /> Kenya · Tanzania · Uganda · Rwanda
-          </span>
+      <section className="reviews-section section-pad" id="contact">
+        <div className="page-width">
+          <div className="reviews-heading">
+            <h2>Guest Reviews</h2>
+            <p>What our travelers say</p>
+          </div>
+          <div className="reviews-grid">
+            {guestReviews.map((review) => (
+              <article className="review-card" key={review.name}>
+                <div
+                  className="review-stars"
+                  role="img"
+                  aria-label="5 out of 5 stars"
+                >
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <Star
+                      key={index}
+                      size={15}
+                      fill="currentColor"
+                      aria-hidden="true"
+                    />
+                  ))}
+                </div>
+                <blockquote>&ldquo;{review.quote}&rdquo;</blockquote>
+                <div className="review-author">
+                  <strong>{review.name}</strong>
+                  <span>{review.country}</span>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
     </main>
