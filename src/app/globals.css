@@ -1467,8 +1467,8 @@ h2 em,
   text-align: center;
 }
 
-.booking-intro {
-  padding-bottom: 34px;
+.booking-page {
+  padding-top: 32px;
 }
 
 .booking-layout {
@@ -3142,6 +3142,10 @@ h2 em,
 
   .page-shell {
     padding-bottom: 36px;
+  }
+
+  .booking-page {
+    padding-top: 20px;
   }
 
   .page-hero {

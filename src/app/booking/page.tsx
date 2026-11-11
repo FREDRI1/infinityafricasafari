@@ -22,18 +22,6 @@ export default async function BookingPage({
 
   return (
     <main className="page-shell booking-page">
-      <section className="page-hero page-width booking-intro">
-        <span className="eyebrow">A personal safari starts here</span>
-        <h1>
-          Tell us about
-          <br />
-          <em>your Africa.</em>
-        </h1>
-        <p>
-          A few details help us begin. This is a request only; our team will
-          confirm availability and final arrangements with you.
-        </p>
-      </section>
       <section className="booking-layout page-width">
         <BookingForm
           safaris={safaris}
