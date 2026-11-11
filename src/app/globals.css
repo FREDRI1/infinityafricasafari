@@ -674,17 +674,27 @@ h2 em,
 }
 
 .safari-grid {
+  position: relative;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
+  align-items: stretch;
   gap: 25px;
 }
 
 .safari-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  height: 100%;
+  overflow: hidden;
   background: var(--ivory);
 }
 
 .safari-card-image {
+  flex: 0 0 280px;
   height: 280px;
   position: relative;
   display: block;
@@ -714,11 +724,15 @@ h2 em,
 }
 
 .safari-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 19px 21px 23px;
 }
 
 .safari-card-meta {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   color: #6f756c;
@@ -745,11 +759,20 @@ h2 em,
 }
 
 .safari-card-body > p {
-  min-height: 66px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   margin-bottom: 10px;
   color: #73776e;
   font-size: 11px;
   line-height: 1.75;
+}
+
+.safari-card-body > .text-link {
+  align-self: flex-start;
+  margin-top: auto;
+  padding-top: 13px;
 }
 
 .safari-card-price {
@@ -1258,10 +1281,14 @@ h2 em,
 }
 
 .catalog-section {
+  position: relative;
+  isolation: isolate;
   padding-top: 5px;
 }
 
 .catalog-filters {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   gap: 15px;
@@ -1299,6 +1326,7 @@ h2 em,
 }
 
 .catalog-section .safari-grid {
+  grid-auto-rows: auto;
   row-gap: 25px;
 }
 
@@ -3180,6 +3208,7 @@ h2 em,
   }
 
   .safari-card-image {
+    flex-basis: 235px;
     height: 235px;
   }
 
