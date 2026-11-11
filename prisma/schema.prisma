@@ -1,0 +1,324 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum StaffRole {
+  SUPER_ADMIN
+  ADMIN
+  SALES_MANAGER
+  CONTENT_EDITOR
+}
+
+enum BookingStatus {
+  NEW_REQUEST
+  CONTACT_PENDING
+  CONTACTED
+  AVAILABILITY_PENDING
+  AWAITING_PAYMENT
+  DEPOSIT_PAID
+  FULLY_PAID
+  CONFIRMED
+  ON_HOLD
+  CANCELLED
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL_PAYMENT
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  PARTIAL
+  NOT_CONFIGURED
+  FAILED
+}
+
+enum CommunicationChannel {
+  EMAIL
+  WHATSAPP
+  PHONE
+  OTHER
+}
+
+model User {
+  id               String                 @id @default(cuid())
+  name             String?
+  email            String                 @unique
+  emailVerified    DateTime?
+  image            String?
+  passwordHash     String?
+  role             StaffRole              @default(SALES_MANAGER)
+  accounts         Account[]
+  sessions         Session[]
+  assignedBookings Booking[]              @relation("AssignedStaff")
+  statusChanges    BookingStatusHistory[] @relation("StatusActor")
+  verifiedPayments PaymentRecord[]        @relation("PaymentVerifier")
+  auditLogs        AuditLog[]
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionToken])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model Customer {
+  id                     String             @id @default(cuid())
+  fullName               String
+  email                  String             @unique
+  phone                  String
+  whatsapp               String?
+  countryOfResidence     String?
+  preferredCommunication String?
+  internalNotes          String?            @db.Text
+  bookings               Booking[]
+  communications         CommunicationLog[]
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@index([email])
+  @@index([fullName])
+}
+
+model Destination {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  name           String
+  country        String
+  summary        String    @db.Text
+  description    String?   @db.Text
+  heroImage      String?
+  heroImageAlt   String?
+  seoTitle       String?
+  seoDescription String?   @db.Text
+  isPublished    Boolean   @default(false)
+  archivedAt     DateTime?
+  safaris        Safari[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Safari {
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  title          String
+  summary        String         @db.Text
+  description    String?        @db.Text
+  durationDays   Int
+  category       String
+  coverImage     String?
+  imageAlt       String?
+  region         String?
+  highlights     String[]       @default([])
+  seoTitle       String?
+  seoDescription String?        @db.Text
+  isPublished    Boolean        @default(false)
+  archivedAt     DateTime?
+  destinationId  String?
+  destination    Destination?   @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  images         SafariImage[]
+  itineraryDays  ItineraryDay[]
+  bookings       Booking[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([isPublished, archivedAt])
+  @@index([destinationId])
+}
+
+model SafariImage {
+  id       String @id @default(cuid())
+  safariId String
+  url      String
+  altText  String
+  position Int    @default(0)
+  safari   Safari @relation(fields: [safariId], references: [id], onDelete: Cascade)
+
+  @@index([safariId, position])
+}
+
+model ItineraryDay {
+  id            String   @id @default(cuid())
+  safariId      String
+  dayNumber     Int
+  title         String
+  description   String   @db.Text
+  location      String?
+  activities    String[]
+  accommodation String?
+  meals         String[]
+  safari        Safari   @relation(fields: [safariId], references: [id], onDelete: Cascade)
+
+  @@unique([safariId, dayNumber])
+}
+
+model Booking {
+  id                      String                 @id @default(cuid())
+  reference               String                 @unique
+  submissionId            String                 @unique
+  status                  BookingStatus          @default(NEW_REQUEST)
+  customerId              String
+  safariId                String?
+  assignedStaffId         String?
+  travelStart             DateTime
+  adults                  Int
+  children                Int                    @default(0)
+  rooms                   Int                    @default(1)
+  accommodationPreference String?
+  requestedActivities     String[]
+  preferredCommunication  String
+  specialRequirements     String?                @db.Text
+  estimatedAmount         Decimal?               @db.Decimal(12, 2)
+  agreedAmount            Decimal?               @db.Decimal(12, 2)
+  currency                String?
+  notificationStatus      NotificationStatus     @default(PENDING)
+  safariSnapshot          Json
+  customerSnapshot        Json
+  customer                Customer               @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  safari                  Safari?                @relation(fields: [safariId], references: [id], onDelete: SetNull)
+  assignedStaff           User?                  @relation("AssignedStaff", fields: [assignedStaffId], references: [id], onDelete: SetNull)
+  statusHistory           BookingStatusHistory[]
+  payments                PaymentRecord[]
+  communications          CommunicationLog[]
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+
+  @@index([status, createdAt])
+  @@index([travelStart])
+  @@index([customerId])
+}
+
+model BookingStatusHistory {
+  id             String         @id @default(cuid())
+  bookingId      String
+  previousStatus BookingStatus?
+  newStatus      BookingStatus
+  actorId        String?
+  reason         String?
+  createdAt      DateTime       @default(now())
+  booking        Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actor          User?          @relation("StatusActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId, createdAt])
+}
+
+model PaymentRecord {
+  id             String      @id @default(cuid())
+  bookingId      String
+  amount         Decimal     @db.Decimal(12, 2)
+  currency       String
+  paymentDate    DateTime
+  method         String
+  transactionRef String?
+  type           PaymentType
+  receiptUrl     String?
+  verified       Boolean     @default(false)
+  verifiedById   String?
+  verifiedAt     DateTime?
+  internalNotes  String?     @db.Text
+  booking        Booking     @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  verifiedBy     User?       @relation("PaymentVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime    @default(now())
+
+  @@index([bookingId, verified])
+}
+
+model CommunicationLog {
+  id         String               @id @default(cuid())
+  customerId String
+  bookingId  String?
+  channel    CommunicationChannel
+  direction  String
+  subject    String?
+  summary    String               @db.Text
+  createdAt  DateTime             @default(now())
+  customer   Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  booking    Booking?             @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([customerId, createdAt])
+  @@index([bookingId, createdAt])
+}
+
+model Media {
+  id         String   @id @default(cuid())
+  url        String
+  publicId   String?  @unique
+  fileName   String
+  mimeType   String
+  bytes      Int
+  category   String
+  altText    String
+  width      Int?
+  height     Int?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+
+  @@index([category, createdAt])
+}
+
+model WebsiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model BookingRateLimit {
+  key           String   @id
+  count         Int      @default(0)
+  windowResetAt DateTime
+
+  @@index([windowResetAt])
+}

@@ -1,69 +1,240 @@
 import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  Compass,
+  Heart,
+  Leaf,
+  MapPin,
+  ShieldCheck,
+} from "lucide-react";
+import { SafariCard } from "@/components/safari-card";
+import { SafariSearch } from "@/components/safari-search";
+import { getPublicDestinations, getPublicSafaris } from "@/lib/catalog";
 
-export default function Home() {
+export default async function Home() {
+  const [safaris, destinations] = await Promise.all([
+    getPublicSafaris(),
+    getPublicDestinations(),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <main>
+      <section className="hero">
         <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src="/assets/images/hero/savannah-dawn.jpg"
+          alt="Safari vehicle on the African savannah at sunset"
+          fill
           priority
+          sizes="100vw"
+          className="hero-image"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <div className="hero-shade" />
+        <div className="hero-content page-width">
+          <div className="hero-copy">
+            <span className="eyebrow eyebrow-light">
+              <span className="eyebrow-line" />
+              A safari, made yours
+            </span>
+            <h1>
+              Africa is not
+              <br />
+              just a place.
+              <br />
+              <em>It stays with you.</em>
+            </h1>
+            <p>
+              Thoughtful journeys, shaped around the way you want to experience
+              the wild.
+            </p>
+            <div className="hero-actions">
+              <Link className="button button-gold" href="/safaris">
+                Explore our journeys <ArrowUpRight size={17} aria-hidden="true" />
+              </Link>
+              <span className="hero-note">Personal planning. Local perspective.</span>
+            </div>
+          </div>
+          <div className="hero-caption">
+            <span>01 — The first light</span>
+            <span>East Africa</span>
+          </div>
+          <SafariSearch
+            destinations={destinations.map(({ name, slug }) => ({ name, slug }))}
+          />
+          <a className="scroll-cue" href="#welcome">
+            <span>Scroll to discover</span>
+            <ArrowDown size={15} aria-hidden="true" />
+          </a>
+        </div>
+      </section>
+
+      <section className="welcome-section section-pad" id="welcome">
+        <div className="page-width welcome-grid">
+          <div className="welcome-heading">
+            <span className="eyebrow">Not a package. A point of departure.</span>
+            <h2>
+              The best journeys
+              <br />
+              <em>feel like your own.</em>
+            </h2>
+          </div>
+          <div className="welcome-copy">
+            <p className="lead">
+              Some come for the wide-open plains. Others for the small,
+              unplanned moments in between.
+            </p>
+            <p>
+              Tell us what draws you to Africa. We&apos;ll help you shape a
+              considered itinerary, with the right pace, places and people at
+              its heart.
+            </p>
+            <Link className="text-link" href="/booking">
+              Start a conversation <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="journeys-section section-pad">
+        <div className="page-width">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">A few ways to begin</span>
+              <h2>Find your kind of <em>wild.</em></h2>
+            </div>
+            <Link className="text-link section-heading-link" href="/safaris">
+              View all journeys <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="safari-grid">
+            {safaris.slice(0, 3).map((safari) => (
+              <SafariCard safari={safari} key={safari.slug} />
+            ))}
+          </div>
+          <p className="editorial-note">
+            Journey outlines are starting points only. Availability, final
+            itineraries and pricing are confirmed with our team.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="destination-section section-pad" id="destinations">
+        <div className="page-width">
+          <div className="section-heading destination-heading">
+            <div>
+              <span className="eyebrow">Places with a pulse</span>
+              <h2>East Africa, <em>open to you.</em></h2>
+            </div>
+            <p>
+              Four countries. Countless ways to slow down, look closer and
+              travel well.
+            </p>
+          </div>
+          <div className="destination-grid">
+            {destinations.map((destination, index) => (
+              <Link
+                href={`/destinations/${destination.slug}`}
+                className={`destination-card destination-card-${index + 1}`}
+                key={destination.slug}
+              >
+                <Image
+                  src={destination.image}
+                  alt={destination.imageAlt}
+                  fill
+                  sizes="(max-width: 700px) 100vw, 33vw"
+                />
+                <span className="destination-overlay" />
+                <span className="destination-copy">
+                  <span className="destination-number">0{index + 1} / EAST AFRICA</span>
+                  <strong>{destination.name}</strong>
+                  <span className="destination-link">
+                    Explore journeys <ArrowUpRight size={15} aria-hidden="true" />
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+          <p className="editorial-note">
+            Destination images are licensed illustrative photography, not a
+            claim that they depict a specific itinerary.
+          </p>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <section className="approach-section section-pad" id="our-approach">
+        <div className="page-width approach-grid">
+          <div className="approach-image">
+            <Image
+              src="/assets/images/experiences/wildlife.jpg"
+              alt="Giraffe standing quietly among trees"
+              fill
+              sizes="(max-width: 800px) 100vw, 50vw"
+            />
+            <span className="image-caption">The beauty is in the details.</span>
+          </div>
+          <div className="approach-copy">
+            <span className="eyebrow">A more considered way to travel</span>
+            <h2>
+              Thoughtful by
+              <br />
+              <em>nature.</em>
+            </h2>
+            <p>
+              A good safari is more than a list of sightings. It&apos;s the
+              guide who knows when to wait, the right camp for your rhythm, and
+              a plan with room to breathe.
+            </p>
+            <div className="approach-values">
+              <div>
+                <Compass size={20} aria-hidden="true" />
+                <span>Made around you</span>
+              </div>
+              <div>
+                <Heart size={20} aria-hidden="true" />
+                <span>People come first</span>
+              </div>
+              <div>
+                <Leaf size={20} aria-hidden="true" />
+                <span>Travel with care</span>
+              </div>
+              <div>
+                <ShieldCheck size={20} aria-hidden="true" />
+                <span>Clear, personal guidance</span>
+              </div>
+            </div>
+            <Link className="button button-outline" href="/booking">
+              Let&apos;s plan together <ArrowUpRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="closing-section" id="contact">
+        <Image
+          src="/assets/images/destinations/wild-africa.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+        />
+        <span className="closing-overlay" />
+        <div className="closing-content">
+          <span className="eyebrow eyebrow-light">Your journey begins here</span>
+          <h2>
+            Come for the wild.
+            <br />
+            <em>Leave with a story.</em>
+          </h2>
+          <p>Share a few details. We&apos;ll take it from there, together.</p>
+          <Link className="button button-gold" href="/booking">
+            Plan your safari <ArrowUpRight size={17} aria-hidden="true" />
+          </Link>
+          <span className="closing-location">
+            <MapPin size={14} aria-hidden="true" /> Kenya · Tanzania · Uganda · Rwanda
+          </span>
+        </div>
+      </section>
+    </main>
   );
 }

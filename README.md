@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Infinity Africa Safari
 
-## Getting Started
+Premium safari discovery and assisted booking platform built with Next.js, strict TypeScript, Tailwind CSS, Prisma and PostgreSQL.
 
-First, run the development server:
+## What is implemented
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Responsive public homepage, safari catalogue and individual journey pages.
+- Destination search and safari filtering.
+- Assisted booking request form with server-side validation, unique references and idempotent submissions.
+- Database-backed booking request throttling keyed by a secret hash of the trusted proxy IP.
+- PostgreSQL booking, customer, payment, history and audit models.
+- Confirmation email and administrator notification through Resend when configured.
+- Private staff sign-in and role-guarded booking dashboard.
+- Role-guarded safari and destination management, itinerary editing, and archive workflows.
+- Local media library with source and license information.
+- Booking search, status history, customer communication notes and WhatsApp hand-off links.
+- Manually recorded payments remain unverified until an authorized administrator verifies them.
+- Sample itinerary concepts and licensed illustrative Unsplash photography; no actual prices or business contact details are assumed.
+
+## Local setup
+
+Requirements: Node.js 20.9+, npm, and a PostgreSQL database (Neon is supported).
+
+1. Copy `.env.example` to `.env` and fill in the values for your services.
+2. Set `DATABASE_URL` to Neon’s pooled connection string and `DIRECT_URL` to its direct connection string.
+3. Generate an authentication secret with `npx auth secret`; set it as `AUTH_SECRET`.
+4. Install packages with `npm install`.
+5. Generate Prisma Client with `npm run db:generate`.
+6. Apply migrations with `npm run db:migrate`.
+7. Set `ADMIN_EMAIL` and a strong `ADMIN_PASSWORD`, then run `npm run db:seed` to create the first staff account and starter content.
+8. Start the app with `npm run dev`.
+
+The public safari ideas are explicitly illustrative starter content. Production CMS content should be reviewed and published by authorized staff. Booking submission requires a configured database. Email delivery additionally requires a verified Resend sender (`EMAIL_FROM`), `RESEND_API_KEY`, and `ADMIN_NOTIFICATION_EMAIL`.
+
+## Deploying with Vercel
+
+Import the GitHub repository into Vercel as a Next.js project. Keep the default install and build commands; `postinstall` generates Prisma Client during dependency installation.
+
+Add these environment variables to the Vercel Production environment:
+
+- `DATABASE_URL`: Neon pooled connection string for application traffic.
+- `DIRECT_URL`: Neon direct (unpooled) connection string, used by Prisma.
+- `AUTH_SECRET`: the Auth.js secret.
+- `NEXT_PUBLIC_SITE_URL`: the canonical HTTPS deployment URL.
+
+Set `AUTH_URL` to the canonical HTTPS deployment URL if Auth.js does not detect it automatically. Optional email and WhatsApp integrations use `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_NOTIFICATION_EMAIL`, and `NEXT_PUBLIC_WHATSAPP_NUMBER`. Do not upload `.env` wholesale: it contains local-only values and credentials that should not be exposed. The initial admin account and database content are seeded separately and do not require `ADMIN_PASSWORD` on Vercel.
+
+After adding or changing Prisma migrations, apply them deliberately to the intended Neon branch with `npm run db:migrate`; do not run migrations as an automatic build step.
+
+## Data and payment rules
+
+Customers submit requests; they do not pay online. Staff personally check availability, agree a final amount and currency, record any payment received outside the site, and verify it separately. The application stores monetary values as PostgreSQL `Decimal` and snapshots customer and safari details at request time.
+
+## Quality checks
+
+```powershell
+npm run typecheck
+npm run lint
+npm run db:validate
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run `npm run test` for booking validation tests. Database-backed flows require valid service configuration to test end-to-end.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Media
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). The admin library currently displays bundled assets and existing media records; persistent Cloudinary uploads are not implemented. No generated video is included.
