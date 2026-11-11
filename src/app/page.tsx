@@ -79,17 +79,14 @@ export default async function Home() {
               </Link>
             ))}
           </div>
-          <p className="editorial-note">
-            Destination images are licensed illustrative photography, not a
-            claim that they depict a specific itinerary.
-          </p>
+          
         </div>
       </section>
 
       <section className="excursions-section section-pad" id="excursions">
         <div className="page-width">
           <div className="section-heading excursions-heading">
-            <span className="eyebrow">A little more to discover</span>
+           
             <h2>Featured <em>Excursions</em></h2>
             <p>Explore unforgettable day adventures along the Kenyan coast.</p>
           </div>
@@ -126,12 +123,7 @@ export default async function Home() {
               </article>
             ))}
           </div>
-          <p className="excursion-note">
-            Prices are indicative estimates in USD; availability and final
-            pricing are confirmed by our team. Upload only images you own or
-            have permission to use. Bundled image credits are listed in the{" "}
-            <Link href="/assets/MEDIA.md">media manifest</Link>.
-          </p>
+         
         </div>
       </section>
 
