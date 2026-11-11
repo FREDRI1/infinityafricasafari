@@ -46,6 +46,10 @@ export function SiteFooter() {
               </a>
             )}
           </div>
+          <div>
+            <span className="footer-label">Staff</span>
+            <Link href="/admin/login">Staff sign in</Link>
+          </div>
         </div>
         <Link href="/booking" className="footer-cta">
           Begin your journey <ArrowUpRight size={17} aria-hidden="true" />
