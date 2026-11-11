@@ -477,18 +477,6 @@ h2 em,
   text-transform: uppercase;
 }
 
-.welcome-section {
-  background: var(--ivory);
-}
-
-.welcome-grid {
-  display: grid;
-  grid-template-columns: 1fr 0.75fr;
-  gap: 12%;
-  align-items: center;
-}
-
-.welcome-heading h2,
 .section-heading h2,
 .approach-copy h2,
 .closing-content h2,
@@ -503,31 +491,12 @@ h2 em,
   line-height: 1.08;
 }
 
-.welcome-heading h2 em,
 .section-heading h2 em,
 .approach-copy h2 em,
 .detail-intro h2 em,
 .itinerary h2 em,
 .detail-aside-card h2 em {
   color: var(--gold);
-}
-
-.welcome-copy {
-  padding-top: 14px;
-}
-
-.welcome-copy p {
-  margin-bottom: 14px;
-  color: #676c64;
-  font-size: 13px;
-  line-height: 1.85;
-}
-
-.welcome-copy .lead {
-  color: var(--charcoal);
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 20px;
-  line-height: 1.45;
 }
 
 .text-link {
@@ -545,10 +514,6 @@ h2 em,
   gap: 13px;
 }
 
-.journeys-section {
-  background: #f1eee5;
-}
-
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -560,11 +525,6 @@ h2 em,
 .section-heading h2 {
   margin-top: 12px;
   font-size: clamp(36px, 4.2vw, 52px);
-}
-
-.section-heading-link {
-  margin-bottom: 8px;
-  white-space: nowrap;
 }
 
 .safari-grid {
@@ -2389,10 +2349,6 @@ h2 em,
     padding-block: 82px;
   }
 
-  .welcome-grid {
-    gap: 7%;
-  }
-
   .safari-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2590,25 +2546,15 @@ h2 em,
     padding-block: 67px;
   }
 
-  .welcome-grid,
   .approach-grid {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 
-  .welcome-heading h2,
   .section-heading h2,
   .approach-copy h2,
   .closing-content h2 {
     font-size: 41px;
-  }
-
-  .welcome-copy {
-    padding-top: 0;
-  }
-
-  .welcome-copy .lead {
-    font-size: 18px;
   }
 
   .section-heading {
@@ -2616,10 +2562,6 @@ h2 em,
     flex-direction: column;
     gap: 5px;
     margin-bottom: 24px;
-  }
-
-  .section-heading-link {
-    margin-top: 7px;
   }
 
   .safari-grid {

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   Compass,
   Heart,
@@ -10,15 +9,11 @@ import {
   MapPin,
   ShieldCheck,
 } from "lucide-react";
-import { SafariCard } from "@/components/safari-card";
 import { SafariSearch } from "@/components/safari-search";
-import { getPublicDestinations, getPublicSafaris } from "@/lib/catalog";
+import { getPublicDestinations } from "@/lib/catalog";
 
 export default async function Home() {
-  const [safaris, destinations] = await Promise.all([
-    getPublicSafaris(),
-    getPublicDestinations(),
-  ]);
+  const destinations = await getPublicDestinations();
 
   return (
     <main>
@@ -63,60 +58,10 @@ export default async function Home() {
           <SafariSearch
             destinations={destinations.map(({ name, slug }) => ({ name, slug }))}
           />
-          <a className="scroll-cue" href="#welcome">
-            <span>Scroll to discover</span>
+          <a className="scroll-cue" href="#destinations">
+            <span>Explore destinations</span>
             <ArrowDown size={15} aria-hidden="true" />
           </a>
-        </div>
-      </section>
-
-      <section className="welcome-section section-pad" id="welcome">
-        <div className="page-width welcome-grid">
-          <div className="welcome-heading">
-            <span className="eyebrow">Not a package. A point of departure.</span>
-            <h2>
-              The best journeys
-              <br />
-              <em>feel like your own.</em>
-            </h2>
-          </div>
-          <div className="welcome-copy">
-            <p className="lead">
-              Some come for the wide-open plains. Others for the small,
-              unplanned moments in between.
-            </p>
-            <p>
-              Tell us what draws you to Africa. We&apos;ll help you shape a
-              considered itinerary, with the right pace, places and people at
-              its heart.
-            </p>
-            <Link className="text-link" href="/booking">
-              Start a conversation <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="journeys-section section-pad">
-        <div className="page-width">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">A few ways to begin</span>
-              <h2>Find your kind of <em>wild.</em></h2>
-            </div>
-            <Link className="text-link section-heading-link" href="/safaris">
-              View all journeys <ArrowRight size={16} aria-hidden="true" />
-            </Link>
-          </div>
-          <div className="safari-grid">
-            {safaris.slice(0, 3).map((safari) => (
-              <SafariCard safari={safari} key={safari.slug} />
-            ))}
-          </div>
-          <p className="editorial-note">
-            Journey outlines are starting points only. Availability, final
-            itineraries and pricing are confirmed with our team.
-          </p>
         </div>
       </section>
 
