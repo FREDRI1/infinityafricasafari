@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { SiteChrome } from "@/components/site-chrome";
+import { getMaintenanceSettings } from "@/lib/maintenance-settings";
+import { getPublicMediaUrl } from "@/lib/media-storage";
 import "./globals.css";
 
 const inter = Inter({
@@ -42,15 +44,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const maintenance = await getMaintenanceSettings();
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome
+          maintenance={{
+            ...maintenance,
+            backgroundImageUrl: getPublicMediaUrl(maintenance.backgroundImage),
+          }}
+        >
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { StaffPermission } from "@prisma/client";
 import { ArrowDownToLine, MousePointerClick } from "lucide-react";
 import { AdminSafariClickChart } from "@/components/admin-safari-click-chart";
 import { AdminTopbar } from "@/components/admin-topbar";
-import { bookingStaffRoles, requireStaff } from "@/lib/admin";
+import { bookingStaffRoles, requireStaffPermission } from "@/lib/admin";
 import { getSafariSlugFromTarget } from "@/lib/marketplace-clicks";
 import { prisma } from "@/lib/prisma";
 
@@ -25,7 +26,7 @@ export default async function AdminReportsPage({
 }: {
   searchParams: Promise<{ period?: string }>;
 }) {
-  const staff = await requireStaff(bookingStaffRoles);
+  const staff = await requireStaffPermission(bookingStaffRoles, StaffPermission.ANALYTICS);
   const params = await searchParams;
   const periodKey: PeriodKey =
     params.period === "7d" || params.period === "30d" || params.period === "90d"
@@ -104,7 +105,7 @@ export default async function AdminReportsPage({
 
   return (
     <main className="admin-shell page-width analytics-page">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <header className="analytics-heading">
         <div>
           <span className="eyebrow">Marketplace performance</span>

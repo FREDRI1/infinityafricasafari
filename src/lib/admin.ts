@@ -1,9 +1,9 @@
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function requireStaff(allowedRoles: StaffRole[]) {
+async function getActiveStaff() {
   if (!process.env.AUTH_SECRET || !process.env.DATABASE_URL) {
     redirect("/admin/login?setup=required");
   }
@@ -17,6 +17,7 @@ export async function requireStaff(allowedRoles: StaffRole[]) {
       name: true,
       email: true,
       role: true,
+      permissions: true,
       isActive: true,
       authVersion: true,
     },
@@ -25,8 +26,23 @@ export async function requireStaff(allowedRoles: StaffRole[]) {
   if (staff.authVersion !== session.user.authVersion) {
     redirect("/admin/login?session=expired");
   }
-  if (!allowedRoles.includes(staff.role)) redirect("/admin/unauthorized");
+  return staff;
+}
 
+export async function requireStaff(allowedRoles: StaffRole[]) {
+  const staff = await getActiveStaff();
+  if (!allowedRoles.includes(staff.role)) redirect("/admin/unauthorized");
+  return staff;
+}
+
+export async function requireStaffPermission(
+  allowedRoles: StaffRole[],
+  permission: StaffPermission,
+) {
+  const staff = await getActiveStaff();
+  if (!allowedRoles.includes(staff.role) && !staff.permissions.includes(permission)) {
+    redirect("/admin/unauthorized");
+  }
   return staff;
 }
 

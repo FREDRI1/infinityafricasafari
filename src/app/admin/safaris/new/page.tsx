@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminSafariForm } from "@/components/admin-safari-form";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { getAdminMediaChoices } from "@/lib/admin-media";
 import { prisma } from "@/lib/prisma";
 import { saveSafari } from "@/app/admin/safaris/actions";
@@ -21,7 +21,7 @@ const contentRoles = [
 ];
 
 export default async function NewSafariPage() {
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.CATALOG_MANAGEMENT);
   const [destinations, mediaChoices] = await Promise.all([
     prisma.destination.findMany({
       where: { archivedAt: null },
@@ -33,7 +33,7 @@ export default async function NewSafariPage() {
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Content studio</span>

@@ -18,10 +18,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import type { StaffRole } from "@prisma/client";
+import type { StaffPermission, StaffRole } from "@prisma/client";
 
 type AdminTopbarProps = {
   role: StaffRole;
+  permissions?: StaffPermission[];
   pendingCount?: number;
 };
 
@@ -31,6 +32,7 @@ type AdminNavItem = {
   disabled?: boolean;
   icon: LucideIcon;
   roles?: StaffRole[];
+  permission?: StaffPermission;
 };
 
 const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
@@ -38,16 +40,16 @@ const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
     label: "Core systems",
     items: [
       { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-      { label: "Safaris", href: "/admin/safaris", icon: Compass },
-      { label: "Destinations", href: "/admin/destinations", icon: MapPinned },
-      { label: "Itineraries", href: "/admin/safaris", icon: FileText },
+      { label: "Safaris", href: "/admin/safaris", icon: Compass, roles: ["SUPER_ADMIN", "ADMIN", "SALES_MANAGER", "CONTENT_EDITOR"], permission: "CATALOG_MANAGEMENT" },
+      { label: "Destinations", href: "/admin/destinations", icon: MapPinned, roles: ["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"], permission: "CATALOG_MANAGEMENT" },
+      { label: "Itineraries", href: "/admin/safaris", icon: FileText, roles: ["SUPER_ADMIN", "ADMIN", "SALES_MANAGER", "CONTENT_EDITOR"], permission: "CATALOG_MANAGEMENT" },
       { label: "Pricing", disabled: true, icon: CreditCard },
     ],
   },
   {
     label: "Operations hub",
     items: [
-      { label: "Bookings", href: "/admin/bookings", icon: Archive },
+      { label: "Bookings", href: "/admin/bookings", icon: Archive, roles: ["SUPER_ADMIN", "ADMIN", "SALES_MANAGER"], permission: "BOOKING_OPERATIONS" },
       { label: "Customers", disabled: true, icon: UsersRound },
       { label: "Payments", disabled: true, icon: CreditCard },
       { label: "Communications", disabled: true, icon: MessageCircle },
@@ -56,9 +58,9 @@ const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
   {
     label: "CMS & assets",
     items: [
-      { label: "Media library", href: "/admin/media", icon: FileText },
+      { label: "Media library", href: "/admin/media", icon: FileText, roles: ["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"], permission: "MEDIA_LIBRARY" },
       { label: "Blog", disabled: true, icon: FileText },
-      { label: "Website content", href: "/admin/content", icon: Compass },
+      { label: "Website content", href: "/admin/content", icon: Compass, roles: ["SUPER_ADMIN", "ADMIN", "CONTENT_EDITOR"], permission: "WEBSITE_CONTENT" },
     ],
   },
   {
@@ -75,15 +77,19 @@ const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
         href: "/admin/settings",
         icon: Settings,
         roles: ["SUPER_ADMIN", "ADMIN"],
+        permission: "SYSTEM_SETTINGS",
       },
-      { label: "Reports & analytics", href: "/admin/reports", icon: ChartNoAxesCombined },
+      { label: "Reports & analytics", href: "/admin/reports", icon: ChartNoAxesCombined, roles: ["SUPER_ADMIN", "ADMIN", "SALES_MANAGER"], permission: "ANALYTICS" },
     ],
   },
 ];
 
-export function AdminTopbar({ role, pendingCount }: AdminTopbarProps) {
+export function AdminTopbar({ role, permissions = [], pendingCount }: AdminTopbarProps) {
   const pathname = usePathname();
   const isEditor = role === "CONTENT_EDITOR";
+  const canAccess = (item: AdminNavItem) =>
+    (item.roles ? item.roles.includes(role) : !item.permission) ||
+    (item.permission !== undefined && permissions.includes(item.permission));
 
   return (
     <aside className="admin-topbar" aria-label="Administration">
@@ -103,7 +109,7 @@ export function AdminTopbar({ role, pendingCount }: AdminTopbarProps) {
         {navigationGroups.map((group) => (
           <div className="admin-nav-group" key={group.label}>
             <h2>{group.label}</h2>
-            {group.items.filter((item) => !item.roles || item.roles.includes(role)).map((item) => {
+            {group.items.filter(canAccess).map((item) => {
               const Icon = item.icon;
               const isCurrent = Boolean(
                 item.href &&
@@ -114,6 +120,7 @@ export function AdminTopbar({ role, pendingCount }: AdminTopbarProps) {
               const isUnavailable = item.disabled || !item.href;
               const isRestricted =
                 isEditor &&
+                !item.permission &&
                 (item.href === "/admin/bookings" ||
                   item.href === "/admin" ||
                   item.href === "/admin/reports");

@@ -5,6 +5,8 @@ import {
   DEFAULT_HERO_CONFIG,
   heroConfigInputSchema,
   isLocalHeroImagePath,
+  isUploadedHeroVideoKey,
+  normalizeHeroVideoSource,
   normalizeHeroVideoPath,
 } from "../src/lib/hero-config";
 
@@ -93,4 +95,10 @@ test("normalizes only safe local hero assets", () => {
   assert.equal(normalizeHeroVideoPath(" /assets/videos/hero.mp4 "), "/assets/videos/hero.mp4");
   assert.equal(normalizeHeroVideoPath("/assets/../hero.mp4"), null);
   assert.equal(normalizeHeroVideoPath("/assets/videos/hero.webm"), null);
+  assert.equal(isUploadedHeroVideoKey("uploads/1a2b3c4d-1234-1234-1234-123456789abc.mp4"), true);
+  assert.equal(isUploadedHeroVideoKey("uploads/../hero.mp4"), false);
+  assert.equal(
+    normalizeHeroVideoSource("uploads/1a2b3c4d-1234-1234-1234-123456789abc.mp4"),
+    "uploads/1a2b3c4d-1234-1234-1234-123456789abc.mp4",
+  );
 });

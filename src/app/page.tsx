@@ -14,7 +14,11 @@ import { getHomepageContent } from "@/lib/homepage-content";
 import { getPublicDestinations } from "@/lib/catalog";
 import { formatPrice } from "@/lib/pricing";
 import { getPublicMediaUrl } from "@/lib/media-storage";
-import { getHeroConfig, isLocalHeroImagePath } from "@/lib/hero-config";
+import {
+  getHeroConfig,
+  isLocalHeroImagePath,
+  isLocalHeroVideoPath,
+} from "@/lib/hero-config";
 
 export default async function Home() {
   const [destinations, homepageContent, heroConfig] = await Promise.all([
@@ -28,11 +32,18 @@ export default async function Home() {
   return (
     <main>
       <HomepageHero
-        config={heroConfig}
+        config={{
+          ...heroConfig,
+          videoUrl:
+            heroConfig.videoUrl && !isLocalHeroVideoPath(heroConfig.videoUrl)
+              ? getPublicMediaUrl(heroConfig.videoUrl)
+              : heroConfig.videoUrl,
+        }}
         destinations={destinations.map(({ name, slug }) => ({ name, slug }))}
         imageUrls={heroConfig.imageUrls.map((image) =>
           isLocalHeroImagePath(image) ? image : getPublicMediaUrl(image),
         )}
+        key={`${heroConfig.mode}:${heroConfig.videoUrl ?? ""}:${heroConfig.imageUrls.join(",")}`}
       />
 
       <section className="destination-section section-pad" id="destinations">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { createStaffUser, updateStaffUser } from "@/app/admin/users/actions";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { requireStaff } from "@/lib/admin";
@@ -19,6 +19,15 @@ const roleLabels: Record<StaffRole, string> = {
   CONTENT_EDITOR: "Content editor",
 };
 
+const permissionLabels: Record<StaffPermission, string> = {
+  BOOKING_OPERATIONS: "Bookings",
+  CATALOG_MANAGEMENT: "Safaris & destinations",
+  WEBSITE_CONTENT: "Website content",
+  MEDIA_LIBRARY: "Media library",
+  SYSTEM_SETTINGS: "Settings & maintenance mode",
+  ANALYTICS: "Reports & analytics",
+};
+
 export default async function AdminUsersPage({
   searchParams,
 }: {
@@ -33,6 +42,7 @@ export default async function AdminUsersPage({
         name: true,
         email: true,
         role: true,
+        permissions: true,
         isActive: true,
         createdAt: true,
       },
@@ -43,7 +53,7 @@ export default async function AdminUsersPage({
 
   return (
     <main className="admin-shell page-width staff-users-page">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <header className="staff-users-heading">
         <div>
           <span className="eyebrow">System administration</span>
@@ -107,6 +117,18 @@ export default async function AdminUsersPage({
               type="password"
             />
           </label>
+          <fieldset className="staff-permissions-fieldset">
+            <legend>Additional privileges</legend>
+            <p>These are added to the selected role&apos;s standard access.</p>
+            <div className="staff-permissions-grid">
+              {Object.values(StaffPermission).map((permission) => (
+                <label key={permission}>
+                  <input name="permissions" type="checkbox" value={permission} />
+                  <span>{permissionLabels[permission]}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <p className="staff-password-note">
             Use at least 12 characters. Provide the initial password through a
             secure channel; it is never displayed again.
@@ -187,6 +209,27 @@ export default async function AdminUsersPage({
                       <input name="role" type="hidden" value={user.role} />
                     )}
                   </label>
+                  <fieldset className="staff-permissions-fieldset">
+                    <legend>Additional privileges</legend>
+                    <p>
+                      Role access is retained; select any extra areas this teammate needs.
+                      Super administrators already have full access.
+                    </p>
+                    <div className="staff-permissions-grid">
+                      {Object.values(StaffPermission).map((permission) => (
+                        <label key={permission}>
+                          <input
+                            defaultChecked={user.permissions.includes(permission)}
+                            disabled={user.role === StaffRole.SUPER_ADMIN}
+                            name="permissions"
+                            type="checkbox"
+                            value={permission}
+                          />
+                          <span>{permissionLabels[permission]}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
                   <label>
                     <span>Account</span>
                     <select
@@ -229,8 +272,8 @@ export default async function AdminUsersPage({
         </div>
       </section>
       <p className="settings-footnote">
-        Only a super administrator can manage users and assign roles. At least
-        one active super administrator must remain.
+        Only a super administrator can manage users and assign privileges. Role
+        access is preserved, and at least one active super administrator must remain.
       </p>
     </main>
   );

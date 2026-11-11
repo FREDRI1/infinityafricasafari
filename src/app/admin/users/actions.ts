@@ -1,6 +1,6 @@
 "use server";
 
-import { Prisma, StaffRole } from "@prisma/client";
+import { Prisma, StaffPermission, StaffRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -12,6 +12,7 @@ const staffUserSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(254),
   role: z.nativeEnum(StaffRole),
+  permissions: z.array(z.nativeEnum(StaffPermission)).max(6),
 });
 
 const passwordSchema = z
@@ -31,6 +32,13 @@ function assertStaffUserInput(formData: FormData) {
     name: field(formData, "name"),
     email: field(formData, "email").toLocaleLowerCase(),
     role: field(formData, "role"),
+    permissions: [
+      ...new Set(
+        formData
+          .getAll("permissions")
+          .filter((value): value is string => typeof value === "string"),
+      ),
+    ],
   });
   if (!parsed.success) {
     throw new Error(
@@ -55,6 +63,8 @@ export async function createStaffUser(formData: FormData) {
         name: input.name,
         email: input.email,
         role: input.role,
+        permissions:
+          input.role === StaffRole.SUPER_ADMIN ? [] : input.permissions,
         passwordHash,
       },
       select: { id: true },
@@ -65,7 +75,12 @@ export async function createStaffUser(formData: FormData) {
         action: "STAFF_USER_CREATED",
         entityType: "User",
         entityId: user.id,
-        details: { email: input.email, role: input.role },
+        details: {
+          email: input.email,
+          role: input.role,
+          permissions:
+            input.role === StaffRole.SUPER_ADMIN ? [] : input.permissions,
+        },
       },
     });
   });
@@ -102,7 +117,14 @@ export async function updateStaffUser(
     async (transaction) => {
       const current = await transaction.user.findUnique({
         where: { id: userId },
-        select: { id: true, name: true, email: true, role: true, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          permissions: true,
+          isActive: true,
+        },
       });
       if (!current) throw new Error("Staff account was not found.");
 
@@ -129,6 +151,8 @@ export async function updateStaffUser(
           name: input.name,
           email: input.email,
           role: input.role,
+          permissions:
+            input.role === StaffRole.SUPER_ADMIN ? [] : input.permissions,
           isActive,
           ...(passwordHash ? { authVersion: { increment: 1 } } : {}),
           ...(passwordHash ? { passwordHash } : {}),
@@ -144,6 +168,9 @@ export async function updateStaffUser(
           details: {
             previousRole: current.role,
             role: input.role,
+            previousPermissions: current.permissions,
+            permissions:
+              input.role === StaffRole.SUPER_ADMIN ? [] : input.permissions,
             wasActive: current.isActive,
             isActive,
             emailChanged: current.email !== input.email,

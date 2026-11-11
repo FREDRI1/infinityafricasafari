@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookingStatus } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
-import { bookingStaffRoles, requireStaff } from "@/lib/admin";
+import { bookingStaffRoles, requireStaffPermission } from "@/lib/admin";
+import { StaffPermission } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default async function AdminBookingsPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
-  const staff = await requireStaff(bookingStaffRoles);
+  const staff = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const params = await searchParams;
   const query = params.q?.trim().slice(0, 100) ?? "";
   const selectedStatus = Object.values(BookingStatus).find(
@@ -55,7 +56,7 @@ export default async function AdminBookingsPage({
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Customer requests</span>

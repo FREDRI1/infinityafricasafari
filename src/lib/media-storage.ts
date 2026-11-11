@@ -1,4 +1,13 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  GetBucketCorsCommand,
+  HeadObjectCommand,
+  PutBucketCorsCommand,
+  PutObjectCommand,
+  S3Client,
+  type CORSRule,
+} from "@aws-sdk/client-s3";
 
 export const SITE_MEDIA_BUCKET = "site-media";
 
@@ -60,6 +69,103 @@ export async function uploadMediaObject(
       CacheControl: "public, max-age=31536000, immutable",
     }),
   );
+}
+
+export async function createPresignedVideoUpload(key: string) {
+  const { getSignedUrl } = await import("@aws-sdk/s3-request-presigner");
+  const client = getStorageClient();
+  const command = new PutObjectCommand({
+    Bucket: SITE_MEDIA_BUCKET,
+    Key: key,
+    ContentType: "video/mp4",
+    CacheControl: "public, max-age=31536000, immutable",
+  });
+  const uploadUrl = await getSignedUrl(client, command, { expiresIn: 900 });
+  return {
+    uploadUrl,
+    headers: {
+      "Content-Type": "video/mp4",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  };
+}
+
+export async function ensureMediaUploadCors(origin: string) {
+  const client = getStorageClient();
+  let rules: CORSRule[] = [];
+  try {
+    const response = await client.send(
+      new GetBucketCorsCommand({ Bucket: SITE_MEDIA_BUCKET }),
+    );
+    rules = response.CORSRules ?? [];
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      !["NoSuchCORSConfiguration", "NotFound"].includes(error.name)
+    ) {
+      throw error;
+    }
+  }
+
+  const hasUploadRule = rules.some(
+    (rule) =>
+      rule.AllowedMethods?.includes("PUT") &&
+      (rule.AllowedOrigins?.includes(origin) ||
+        rule.AllowedOrigins?.includes("*")) &&
+      (rule.AllowedHeaders?.includes("*") ||
+        (rule.AllowedHeaders?.includes("content-type") &&
+          rule.AllowedHeaders?.includes("cache-control"))),
+  );
+  if (hasUploadRule) return;
+
+  await client.send(
+    new PutBucketCorsCommand({
+      Bucket: SITE_MEDIA_BUCKET,
+      CORSConfiguration: {
+        CORSRules: [
+          ...rules,
+          {
+            AllowedOrigins: [origin],
+            AllowedMethods: ["PUT"],
+            AllowedHeaders: ["content-type", "cache-control"],
+            ExposeHeaders: ["ETag"],
+            MaxAgeSeconds: 3600,
+          },
+        ],
+      },
+    }),
+  );
+}
+
+export async function getMediaObjectMetadata(key: string) {
+  const client = getStorageClient();
+  const response = await client.send(
+    new HeadObjectCommand({ Bucket: SITE_MEDIA_BUCKET, Key: key }),
+  );
+  if ((response.ContentLength ?? 0) < 12) {
+    return {
+      bytes: response.ContentLength ?? 0,
+      mimeType: response.ContentType ?? "",
+      isMp4: false,
+    };
+  }
+  const signature = await client.send(
+    new GetObjectCommand({
+      Bucket: SITE_MEDIA_BUCKET,
+      Key: key,
+      Range: "bytes=4-7",
+    }),
+  );
+  const signatureBytes = await signature.Body?.transformToByteArray();
+  return {
+    bytes: response.ContentLength ?? 0,
+    mimeType: response.ContentType ?? "",
+    isMp4: Boolean(
+      signatureBytes &&
+        signatureBytes.length === 4 &&
+        Buffer.from(signatureBytes).toString("ascii") === "ftyp",
+    ),
+  };
 }
 
 export async function deleteMediaObject(key: string) {

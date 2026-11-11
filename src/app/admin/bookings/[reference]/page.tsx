@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookingStatus, PaymentType, Prisma, StaffRole } from "@prisma/client";
+import { BookingStatus, PaymentType, Prisma, StaffPermission, StaffRole } from "@prisma/client";
 import {
   ArrowLeft,
   Check,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { ConfirmActionForm } from "@/components/confirm-action-form";
-import { bookingStaffRoles, requireStaff } from "@/lib/admin";
+import { bookingStaffRoles, requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import {
   logCustomerCommunication,
@@ -58,7 +58,7 @@ export default async function AdminBookingDetailPage({
   params,
   searchParams,
 }: Props) {
-  const staff = await requireStaff(bookingStaffRoles);
+  const staff = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const [{ reference }, { updated }] = await Promise.all([params, searchParams]);
   const booking = await prisma.booking.findUnique({
     where: { reference },
@@ -107,7 +107,7 @@ export default async function AdminBookingDetailPage({
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <Link className="back-link admin-back-link" href="/admin/bookings">
         <ArrowLeft size={15} aria-hidden="true" /> All booking requests
       </Link>

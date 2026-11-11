@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { ImagePlus, Plus, Trash2, Video } from "lucide-react";
 import type { AdminMediaChoice } from "@/lib/admin-media";
@@ -31,10 +32,12 @@ export function AdminHeroSettings({
   config,
   mediaChoices,
   saved,
+  videoChoices,
 }: {
   config: HeroConfigContent;
   mediaChoices: AdminMediaChoice[];
   saved: boolean;
+  videoChoices: AdminMediaChoice[];
 }) {
   const [mode, setMode] = useState<HeroModeValue>(config.mode);
   const [imageUrls, setImageUrls] = useState([...config.imageUrls]);
@@ -185,34 +188,49 @@ export function AdminHeroSettings({
           </div>
         ) : (
           <label className="settings-field hero-video-field" htmlFor="hero-video-url">
-            <span>Local MP4 asset path</span>
+            <span>MP4 background video</span>
             <small>
-              Add an MP4 to <code>public/assets/</code>, then enter its public path
-              (for example, <code>/assets/videos/safari.mp4</code>). External video
-              URLs are not accepted.
+              Select an MP4 already uploaded to the media library. Your heading,
+              supporting text, search and actions stay in the same positions.
             </small>
-            <input
+            <select
               defaultValue={config.videoUrl ?? ""}
               id="hero-video-url"
-              maxLength={1000}
               name="videoUrl"
-              placeholder="/assets/videos/safari.mp4"
               required
-              type="text"
-            />
+            >
+              <option value="" disabled>
+                {videoChoices.length ? "Choose an MP4 video" : "Upload an MP4 to the media library first"}
+              </option>
+              {config.videoUrl?.startsWith("/") && (
+                <option value={config.videoUrl}>Existing local video asset</option>
+              )}
+              {videoChoices.map((choice) => (
+                <option key={choice.value} value={choice.value}>
+                  {choice.category} — {choice.alt}
+                </option>
+              ))}
+            </select>
+            <Link className="hero-upload-video-link" href="/admin/media">
+              Upload a video in Media library
+            </Link>
           </label>
         )}
 
         <div className="hero-copy-fields">
           <label className="settings-field" htmlFor="hero-heading">
             <span>Hero heading</span>
-            <small>Keep it concise so it remains clear across screen sizes.</small>
-            <input
+            <small>
+              Keep it concise. Add a line break to control the heading layout on
+              large screens.
+            </small>
+            <textarea
               defaultValue={config.headingText}
               id="hero-heading"
               maxLength={120}
               name="headingText"
               required
+              rows={2}
             />
           </label>
           <label className="settings-field" htmlFor="hero-subheading">

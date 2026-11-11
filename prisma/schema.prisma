@@ -15,6 +15,15 @@ enum StaffRole {
   CONTENT_EDITOR
 }
 
+enum StaffPermission {
+  BOOKING_OPERATIONS
+  CATALOG_MANAGEMENT
+  WEBSITE_CONTENT
+  MEDIA_LIBRARY
+  SYSTEM_SETTINGS
+  ANALYTICS
+}
+
 enum BookingStatus {
   NEW_REQUEST
   CONTACT_PENDING
@@ -63,6 +72,7 @@ model User {
   image            String?
   passwordHash     String?
   role             StaffRole              @default(SALES_MANAGER)
+  permissions      StaffPermission[]      @default([])
   isActive         Boolean                @default(true)
   authVersion      Int                    @default(0)
   accounts         Account[]

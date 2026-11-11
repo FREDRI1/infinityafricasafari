@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminDestinationForm } from "@/components/admin-destination-form";
 import { saveDestination } from "@/app/admin/destinations/actions";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getAdminMediaChoices } from "@/lib/admin-media";
 
@@ -20,11 +20,11 @@ export default async function EditDestinationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const staff = await requireStaff([
+  const staff = await requireStaffPermission([
     StaffRole.SUPER_ADMIN,
     StaffRole.ADMIN,
     StaffRole.CONTENT_EDITOR,
-  ]);
+  ], StaffPermission.CATALOG_MANAGEMENT);
   const { id } = await params;
   const [destination, mediaChoices] = await Promise.all([
     prisma.destination.findUnique({ where: { id } }),
@@ -34,7 +34,7 @@ export default async function EditDestinationPage({
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Content studio</span>

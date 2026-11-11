@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminSafariForm } from "@/components/admin-safari-form";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { saveSafari } from "@/app/admin/safaris/actions";
 import { getAdminMediaChoices } from "@/lib/admin-media";
@@ -26,7 +26,7 @@ export default async function EditSafariPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.CATALOG_MANAGEMENT);
   const { id } = await params;
   const [safari, destinations, mediaChoices] = await Promise.all([
     prisma.safari.findUnique({
@@ -47,7 +47,7 @@ export default async function EditSafariPage({
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Content studio</span>

@@ -319,11 +319,20 @@ p {
 }
 
 .hero--managed .hero-content {
+  z-index: 2;
+  box-sizing: border-box;
+  height: auto;
+  min-height: max(690px, min(790px, calc(100svh - 116px)));
   display: flex;
   align-items: center;
   justify-content: center;
   padding-top: 0;
   padding-bottom: 130px;
+}
+
+.hero.hero--managed {
+  height: auto;
+  min-height: max(690px, min(790px, calc(100svh - 116px)));
 }
 
 .hero--managed .hero-copy {
@@ -341,11 +350,11 @@ p {
   justify-content: center;
 }
 
-.hero--managed h1 {
-  max-width: 880px;
-  margin-right: auto;
-  margin-left: auto;
-  text-wrap: balance;
+.hero--managed .hero-shade {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgb(12 27 21 / 64%) 0%, rgb(12 27 21 / 39%) 54%, rgb(12 27 21 / 24%) 100%),
+    linear-gradient(0deg, rgb(12 27 21 / 62%) 0%, rgb(12 27 21 / 8%) 70%);
 }
 
 .hero--managed .hero-note {
@@ -391,10 +400,6 @@ p {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.hero--managed.is-video .hero-shade {
-  background: rgb(0 0 0 / 40%);
 }
 
 .hero-shade {
@@ -451,12 +456,30 @@ h3 {
   font-weight: 400;
 }
 
+.hero--managed .hero-content {
+  min-height: 760px;
+  justify-content: flex-start;
+  padding: 91px 0 230px;
+}
+
+.hero--managed .hero-copy {
+  width: 100%;
+  max-width: 100%;
+}
+
 .hero h1 {
   margin: 20px 0 18px;
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(54px, 7.3vw, 94px);
   letter-spacing: -0.045em;
   line-height: 0.99;
+}
+
+.hero--managed h1 {
+  max-width: 13ch;
+  font-size: clamp(43px, 11vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
 }
 
 .hero h1 em,
@@ -466,6 +489,19 @@ h2 em,
 .confirmation-card h1 em {
   color: var(--gold-light);
   font-weight: 400;
+}
+
+.hero--managed .hero-copy h1 {
+  max-width: 16ch;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.hero-heading-line {
+  display: block;
 }
 
 .hero-copy > p {
@@ -2546,6 +2582,42 @@ h2 em,
 .media-upload-form .field small {
   color: var(--muted);
   font-size: 9px;
+}
+
+.media-kind-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.media-kind-field legend {
+  width: 100%;
+  margin-bottom: 1px;
+  color: var(--forest);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.media-kind-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #555d54;
+  font-size: 10px;
+}
+
+.media-kind-field input {
+  accent-color: var(--forest);
+}
+
+.media-upload-progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--forest);
 }
 
 .homepage-content-form {
@@ -5280,6 +5352,14 @@ h2 em,
   font-size: 10px;
 }
 
+.hero-upload-video-link {
+  width: fit-content;
+  color: #735d24;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .hero-copy-fields {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -5541,6 +5621,187 @@ h2 em,
 .staff-status-inactive {
   background: #f1ece2;
   color: #7e7051;
+}
+
+.staff-permissions-fieldset {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  padding: 13px;
+  border: 1px solid #ebe6db;
+  border-radius: 9px;
+  background: #fcfbf8;
+}
+
+.staff-permissions-fieldset legend {
+  padding: 0 5px;
+  color: #183527;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.staff-permissions-fieldset > p {
+  margin: 0 0 10px;
+  color: #777d74;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.staff-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.staff-permissions-grid > label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  color: #39473d;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.staff-permissions-grid input {
+  width: 15px;
+  height: 15px;
+  min-height: 0;
+  margin: 0;
+  accent-color: #173c2c;
+}
+
+.staff-permissions-grid input:disabled {
+  opacity: 0.55;
+}
+
+.staff-user-form .staff-permissions-fieldset {
+  grid-column: 1 / -1;
+}
+
+.settings-field textarea {
+  width: 100%;
+  min-height: 82px;
+  padding: 9px 11px;
+  border: 1px solid #e5e2d9;
+  border-radius: 7px;
+  outline: none;
+  background: #fff;
+  color: #27382d;
+  font: inherit;
+  font-size: 11px;
+  resize: vertical;
+}
+
+.settings-field textarea:focus {
+  border-color: #9a7a30;
+  box-shadow: 0 0 0 3px rgb(212 175 55 / 14%);
+}
+
+.maintenance-state {
+  margin-left: auto;
+  padding: 7px 10px;
+  border: 1px solid #dfe9df;
+  border-radius: 999px;
+  background: #f1f7f0;
+  color: #356345;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.maintenance-state.is-active {
+  border-color: #ead9c5;
+  background: #fbf2e7;
+  color: #8a5129;
+}
+
+.marketplace-maintenance {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  padding: clamp(24px, 7vw, 88px);
+  background-color: #10251b;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: #fff;
+}
+
+.marketplace-maintenance-content {
+  width: min(100%, 720px);
+  text-align: center;
+}
+
+.marketplace-maintenance-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: clamp(56px, 12vh, 118px);
+  text-align: left;
+}
+
+.marketplace-maintenance-brand .brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #d4af37;
+  border-radius: 50%;
+  color: #e2c565;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 22px;
+}
+
+.marketplace-maintenance-brand strong,
+.marketplace-maintenance-brand small {
+  display: block;
+  letter-spacing: 0.16em;
+}
+
+.marketplace-maintenance-brand strong {
+  font-size: 12px;
+}
+
+.marketplace-maintenance-brand small {
+  margin-top: 4px;
+  color: #e2c565;
+  font-size: 8px;
+}
+
+.marketplace-maintenance-kicker {
+  display: block;
+  margin-bottom: 16px;
+  color: #e2c565;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+}
+
+.marketplace-maintenance h1 {
+  margin: 0;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(38px, 7vw, 74px);
+  font-weight: 500;
+  line-height: 1.08;
+}
+
+.marketplace-maintenance p {
+  max-width: 570px;
+  margin: 20px auto 0;
+  color: rgb(255 255 255 / 84%);
+  font-size: clamp(14px, 2vw, 17px);
+  line-height: 1.75;
+}
+
+@media (max-width: 700px) {
+  .staff-permissions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marketplace-maintenance-brand {
+    margin-bottom: 64px;
+  }
 }
 
 .settings-form {

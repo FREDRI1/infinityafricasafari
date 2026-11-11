@@ -4,12 +4,13 @@ import {
   BookingStatus,
   PaymentType,
   Prisma,
+  StaffPermission,
   StaffRole,
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { bookingStaffRoles, requireStaff } from "@/lib/admin";
+import { bookingStaffRoles, requireStaff, requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 const statusSchema = z.object({
@@ -40,7 +41,7 @@ export async function updateBookingStatus(
   bookingId: string,
   formData: FormData,
 ) {
-  const actor = await requireStaff(bookingStaffRoles);
+  const actor = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const parsed = statusSchema.safeParse({
     status: formValue(formData, "status"),
     reason: formValue(formData, "reason"),
@@ -100,7 +101,7 @@ export async function saveAgreedAmount(
   bookingId: string,
   formData: FormData,
 ) {
-  const actor = await requireStaff(bookingStaffRoles);
+  const actor = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const parsedAmount = moneySchema.safeParse(formValue(formData, "amount"));
   const parsedCurrency = currencySchema.safeParse(
     formValue(formData, "currency").toUpperCase(),
@@ -169,7 +170,7 @@ export async function recordManualPayment(
   bookingId: string,
   formData: FormData,
 ) {
-  const actor = await requireStaff(bookingStaffRoles);
+  const actor = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const amount = moneySchema.safeParse(formValue(formData, "amount"));
   const type = z.nativeEnum(PaymentType).safeParse(formValue(formData, "type"));
   const method = z.string().trim().min(2).max(60).safeParse(
@@ -335,7 +336,7 @@ export async function logCustomerCommunication(
   bookingId: string,
   formData: FormData,
 ) {
-  const actor = await requireStaff(bookingStaffRoles);
+  const actor = await requireStaffPermission(bookingStaffRoles, StaffPermission.BOOKING_OPERATIONS);
   const channel = z.enum(["EMAIL", "WHATSAPP", "PHONE", "OTHER"]).safeParse(
     formValue(formData, "channel"),
   );

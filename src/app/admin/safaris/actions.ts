@@ -1,11 +1,11 @@
 "use server";
 
-import { Prisma, StaffRole } from "@prisma/client";
+import { Prisma, StaffPermission, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isAdminMediaSource } from "@/lib/admin-media";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { hasOverlappingSeasonRanges, isValidSeasonRange } from "@/lib/pricing";
 import { prisma } from "@/lib/prisma";
 
@@ -65,7 +65,7 @@ function invalidateCatalogue(slug?: string) {
 }
 
 export async function saveSafari(formData: FormData) {
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.CATALOG_MANAGEMENT);
   const rawId = value(formData, "id");
   const parsed = safariInputSchema.safeParse({
     title: value(formData, "title"),
@@ -282,7 +282,7 @@ export async function saveSafari(formData: FormData) {
 
 export async function archiveSafari(safariId: string, _formData: FormData) {
   void _formData;
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.CATALOG_MANAGEMENT);
   const safari = await prisma.safari.findUnique({
     where: { id: safariId },
     select: { id: true, slug: true },

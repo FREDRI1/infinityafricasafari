@@ -1,10 +1,10 @@
 "use server";
 
-import { Prisma, StaffRole } from "@prisma/client";
+import { Prisma, StaffPermission, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isAdminMediaSource } from "@/lib/admin-media";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { homepageContentSchema } from "@/lib/homepage-content";
 import { prisma } from "@/lib/prisma";
 
@@ -15,7 +15,7 @@ const contentRoles = [
 ];
 
 export async function saveHomepageContent(formData: FormData) {
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.WEBSITE_CONTENT);
   const rawContent = formData.get("homepageContent");
   if (typeof rawContent !== "string") {
     throw new Error("Homepage content is missing. Review the form and try again.");
@@ -36,7 +36,7 @@ export async function saveHomepageContent(formData: FormData) {
   }
 
   const selectedImages = parsed.data.excursions.map((excursion) => excursion.image);
-  if (!(await Promise.all(selectedImages.map(isAdminMediaSource))).every(Boolean)) {
+  if (!(await Promise.all(selectedImages.map((image) => isAdminMediaSource(image)))).every(Boolean)) {
     throw new Error("Choose excursion images from the media library.");
   }
 

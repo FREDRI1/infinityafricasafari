@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { CheckCircle2, LockKeyhole, Settings2 } from "lucide-react";
+import { CheckCircle2, LockKeyhole, Settings2, Wrench } from "lucide-react";
 import { AdminTopbar } from "@/components/admin-topbar";
-import { saveOperationalSettings } from "@/app/admin/settings/actions";
+import {
+  saveMaintenanceSettings,
+  saveOperationalSettings,
+} from "@/app/admin/settings/actions";
 import { AdminHeroSettings } from "@/components/admin-hero-settings";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { getAdminMediaChoices } from "@/lib/admin-media";
 import { getHeroConfig } from "@/lib/hero-config";
 import { getOperationalSettings } from "@/lib/operational-settings";
-import { StaffRole } from "@prisma/client";
+import { getMaintenanceSettings } from "@/lib/maintenance-settings";
+import { StaffPermission, StaffRole } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -18,19 +22,28 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string; heroSaved?: string }>;
+  searchParams: Promise<{
+    saved?: string;
+    heroSaved?: string;
+    maintenanceSaved?: string;
+  }>;
 }) {
-  const staff = await requireStaff([StaffRole.SUPER_ADMIN, StaffRole.ADMIN]);
-  const [settings, params, heroConfig, mediaChoices] = await Promise.all([
+  const staff = await requireStaffPermission(
+    [StaffRole.SUPER_ADMIN, StaffRole.ADMIN],
+    StaffPermission.SYSTEM_SETTINGS,
+  );
+  const [settings, params, heroConfig, mediaChoices, videoChoices, maintenance] = await Promise.all([
     getOperationalSettings(),
     searchParams,
     getHeroConfig(),
     getAdminMediaChoices(),
+    getAdminMediaChoices({ mediaType: "video" }),
+    getMaintenanceSettings(),
   ]);
 
   return (
     <main className="admin-shell page-width settings-page">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <header className="settings-heading">
         <div>
           <span className="eyebrow">System administration</span>
@@ -45,12 +58,81 @@ export default async function AdminSettingsPage({
           Your operational settings have been saved.
         </p>
       )}
+      {params.maintenanceSaved === "1" && (
+        <p className="settings-saved" role="status">
+          <CheckCircle2 size={17} aria-hidden="true" />
+          Marketplace access settings have been saved.
+        </p>
+      )}
 
       <AdminHeroSettings
         config={heroConfig}
         mediaChoices={mediaChoices}
         saved={params.heroSaved === "1"}
+        videoChoices={videoChoices}
       />
+
+      <section className="settings-panel" aria-labelledby="marketplace-access-title">
+        <div className="settings-panel-heading">
+          <span className="settings-panel-icon"><Wrench size={20} /></span>
+          <div>
+            <span className="analytics-kicker">Marketplace access</span>
+            <h2 id="marketplace-access-title">Maintenance mode</h2>
+          </div>
+          <span className={`maintenance-state${maintenance.enabled ? " is-active" : ""}`}>
+            {maintenance.enabled ? "Marketplace locked" : "Marketplace open"}
+          </span>
+        </div>
+        <form action={saveMaintenanceSettings} className="settings-form">
+          <label className="settings-field">
+            <span>Marketplace availability</span>
+            <small>
+              When locked, public pages show the maintenance notice. The admin
+              portal remains available so staff can reopen the marketplace.
+            </small>
+            <select defaultValue={String(maintenance.enabled)} name="enabled">
+              <option value="false">Open to visitors</option>
+              <option value="true">Under maintenance</option>
+            </select>
+          </label>
+          <label className="settings-field">
+            <span>Background image</span>
+            <select
+              defaultValue={maintenance.backgroundImage}
+              name="backgroundImage"
+              required
+            >
+              {mediaChoices.map((media) => (
+                <option key={media.value} value={media.value}>
+                  {media.alt || media.category}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="settings-field">
+            <span>Notice heading</span>
+            <input
+              defaultValue={maintenance.heading}
+              maxLength={100}
+              name="heading"
+              required
+            />
+          </label>
+          <label className="settings-field">
+            <span>Visitor message</span>
+            <textarea
+              defaultValue={maintenance.message}
+              maxLength={500}
+              name="message"
+              required
+              rows={3}
+            />
+          </label>
+          <button className="button button-dark settings-submit" type="submit">
+            Save marketplace access
+          </button>
+        </form>
+      </section>
 
       <section className="settings-panel" aria-labelledby="booking-settings-title">
         <div className="settings-panel-heading">

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { ConfirmActionForm } from "@/components/confirm-action-form";
 import { archiveDestination } from "@/app/admin/destinations/actions";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
@@ -20,14 +20,14 @@ const roles = [
 ];
 
 export default async function AdminDestinationsPage() {
-  const staff = await requireStaff(roles);
+  const staff = await requireStaffPermission(roles, StaffPermission.CATALOG_MANAGEMENT);
   const destinations = await prisma.destination.findMany({
     orderBy: [{ archivedAt: "asc" }, { name: "asc" }],
   });
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Content studio</span>

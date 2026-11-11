@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { AdminMediaUploadForm } from "@/components/admin-media-upload-form";
 import { localMedia } from "@/data/media";
 import { getPublicMediaUrl } from "@/lib/media-storage";
 import { prisma } from "@/lib/prisma";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 
 export const metadata: Metadata = {
   title: "Media library",
@@ -16,23 +16,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminMediaPage() {
-  const staff = await requireStaff([
+  const staff = await requireStaffPermission([
     StaffRole.SUPER_ADMIN,
     StaffRole.ADMIN,
     StaffRole.CONTENT_EDITOR,
-  ]);
+  ], StaffPermission.MEDIA_LIBRARY);
   const uploadedMedia = process.env.DATABASE_URL
     ? await prisma.media.findMany({ orderBy: { createdAt: "desc" }, take: 100 })
     : [];
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Media library</span>
-          <h1>Images</h1>
-          <p>Upload images from your computer and choose them in website content editors.</p>
+          <h1>Images &amp; video</h1>
+          <p>Upload images and MP4 videos, then choose them in website content editors and hero settings.</p>
         </div>
         <Link className="button button-outline" href="/assets/MEDIA.md" target="_blank">
           Media sources and license
@@ -43,7 +43,7 @@ export default async function AdminMediaPage() {
         <div className="admin-section-heading">
           <div>
             <span className="eyebrow">Add to your library</span>
-            <h2>Upload an image</h2>
+            <h2>Upload media</h2>
           </div>
         </div>
         <AdminMediaUploadForm />
@@ -89,7 +89,7 @@ export default async function AdminMediaPage() {
             {uploadedMedia.map((media) => (
               <article className="admin-media-card" key={media.id}>
                 {media.mimeType.startsWith("video/") ? (
-                  <video controls preload="metadata" src={media.url}>
+                  <video controls preload="metadata" src={getPublicMediaUrl(media.url)}>
                     Your browser does not support embedded video.
                   </video>
                 ) : (
@@ -114,7 +114,7 @@ export default async function AdminMediaPage() {
           <div className="admin-empty">
             <h2>No uploaded media yet.</h2>
             <p>
-              Upload a rights-cleared image above to add it to your persistent
+              Upload a rights-cleared image or MP4 video above to add it to your persistent
               website media library.
             </p>
           </div>

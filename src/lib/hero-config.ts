@@ -49,6 +49,23 @@ export function normalizeHeroVideoPath(value: string) {
   return path;
 }
 
+export function isLocalHeroVideoPath(value: string) {
+  return normalizeHeroVideoPath(value) !== null;
+}
+
+export function isUploadedHeroVideoKey(value: string) {
+  return (
+    /^uploads\/(?:[a-zA-Z0-9_-]+\/)*[a-f0-9-]+\.mp4$/i.test(value) &&
+    !value.split("/").some((part) => part === "." || part === "..")
+  );
+}
+
+export function normalizeHeroVideoSource(value: string) {
+  const path = normalizeHeroVideoPath(value);
+  if (path) return path;
+  return isUploadedHeroVideoKey(value.trim()) ? value.trim() : null;
+}
+
 export const heroConfigInputSchema = z
   .object({
     mode: z.nativeEnum(HeroMode),
@@ -83,7 +100,7 @@ export const heroConfigInputSchema = z
       });
     }
     if (config.mode === HeroMode.VIDEO) {
-      if (!normalizeHeroVideoPath(config.videoUrl)) {
+      if (!normalizeHeroVideoSource(config.videoUrl)) {
         context.addIssue({
           code: "custom",
           path: ["videoUrl"],

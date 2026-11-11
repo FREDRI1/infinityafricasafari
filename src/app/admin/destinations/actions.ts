@@ -1,11 +1,11 @@
 "use server";
 
-import { Prisma, StaffRole } from "@prisma/client";
+import { Prisma, StaffPermission, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isAdminMediaSource } from "@/lib/admin-media";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 const roles = [
@@ -41,7 +41,7 @@ function revalidateDestination(slug: string) {
 }
 
 export async function saveDestination(formData: FormData) {
-  const staff = await requireStaff(roles);
+  const staff = await requireStaffPermission(roles, StaffPermission.CATALOG_MANAGEMENT);
   const id = value(formData, "id");
   const parsed = destinationSchema.safeParse({
     name: value(formData, "name"),
@@ -122,7 +122,7 @@ export async function archiveDestination(
   _formData: FormData,
 ) {
   void _formData;
-  const staff = await requireStaff(roles);
+  const staff = await requireStaffPermission(roles, StaffPermission.CATALOG_MANAGEMENT);
   const destination = await prisma.destination.findUnique({
     where: { id: destinationId },
     select: { id: true, slug: true },

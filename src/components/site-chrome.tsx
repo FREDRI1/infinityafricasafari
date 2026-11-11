@@ -1,15 +1,64 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { MarketplaceClickTracker } from "@/components/marketplace-click-tracker";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import type { MaintenanceSettings } from "@/lib/maintenance-settings";
 
-export function SiteChrome({ children }: { children: React.ReactNode }) {
+type SiteChromeProps = {
+  children: React.ReactNode;
+  maintenance: MaintenanceSettings & { backgroundImageUrl: string };
+};
+
+export function SiteChrome({ children, maintenance }: SiteChromeProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
 
+  useEffect(() => {
+    if (isAdminRoute) return;
+
+    const refresh = () => router.refresh();
+    const interval = window.setInterval(refresh, 30_000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [isAdminRoute, router]);
+
   if (isAdminRoute) return children;
+
+  if (maintenance.enabled) {
+    return (
+      <main
+        aria-labelledby="marketplace-maintenance-heading"
+        className="marketplace-maintenance"
+        style={{
+          backgroundImage: `linear-gradient(110deg, rgb(8 28 20 / 78%), rgb(8 28 20 / 38%)), url(${JSON.stringify(maintenance.backgroundImageUrl)})`,
+        }}
+      >
+        <div className="marketplace-maintenance-content">
+          <span className="marketplace-maintenance-brand">
+            <span className="brand-mark" aria-hidden="true">I</span>
+            <span>
+              <strong>INFINITY</strong>
+              <small>AFRICA SAFARI</small>
+            </span>
+          </span>
+          <span className="marketplace-maintenance-kicker">A brief pause, a better journey</span>
+          <h1 id="marketplace-maintenance-heading">{maintenance.heading}</h1>
+          <p>{maintenance.message}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <>

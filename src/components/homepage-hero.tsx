@@ -98,10 +98,7 @@ export function HomepageHero({
     imageFailed || config.mode === "VIDEO" ? fallbackImage : safeImageUrls[activeIndex];
 
   return (
-    <section
-      className={`hero hero--managed${isVideo ? " is-video" : ""}`}
-      ref={heroRef}
-    >
+    <section className="hero hero--managed" ref={heroRef}>
       {isVideo ? (
         <video
           aria-hidden="true"
@@ -152,7 +149,13 @@ export function HomepageHero({
             <span className="eyebrow-line" />
             A safari, made yours
           </span>
-          <h1>{config.headingText}</h1>
+          <h1>
+            {config.headingText.split("\n").map((line, index) => (
+              <span className="hero-heading-line" key={`${index}-${line}`}>
+                {line}
+              </span>
+            ))}
+          </h1>
           <p>{config.subheadingText}</p>
           <div className="hero-actions">
             <Link className="button button-gold" href="/safaris">

@@ -260,7 +260,11 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="admin-shell page-width admin-dashboard-page">
-      <AdminTopbar role={staff.role} pendingCount={newRequests} />
+      <AdminTopbar
+        role={staff.role}
+        permissions={staff.permissions}
+        pendingCount={newRequests}
+      />
       <DashboardToolbar
         name={staff.name?.trim() || "Team"}
         role={staff.role}

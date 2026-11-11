@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { StaffRole } from "@prisma/client";
+import { StaffPermission, StaffRole } from "@prisma/client";
 import { AdminHomepageContentForm } from "@/components/admin-homepage-content-form";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { saveHomepageContent } from "@/app/admin/content/actions";
 import { localMedia } from "@/data/media";
 import { getHomepageContent } from "@/lib/homepage-content";
-import { requireStaff } from "@/lib/admin";
+import { requireStaffPermission } from "@/lib/admin";
 import { getPublicMediaUrl } from "@/lib/media-storage";
 import { prisma } from "@/lib/prisma";
 
@@ -26,10 +26,11 @@ export default async function AdminHomepageContentPage({
 }: {
   searchParams: Promise<{ saved?: string }>;
 }) {
-  const staff = await requireStaff(contentRoles);
+  const staff = await requireStaffPermission(contentRoles, StaffPermission.WEBSITE_CONTENT);
   const [content, uploadedMedia, params] = await Promise.all([
     getHomepageContent(),
     prisma.media.findMany({
+      where: { mimeType: { startsWith: "image/" } },
       orderBy: { createdAt: "desc" },
       select: { url: true, altText: true, category: true },
     }),
@@ -51,7 +52,7 @@ export default async function AdminHomepageContentPage({
 
   return (
     <main className="admin-shell page-width">
-      <AdminTopbar role={staff.role} />
+      <AdminTopbar role={staff.role} permissions={staff.permissions} />
       <div className="admin-heading">
         <div>
           <span className="eyebrow">Content studio</span>
