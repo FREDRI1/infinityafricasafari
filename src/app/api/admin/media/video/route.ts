@@ -12,7 +12,10 @@ import {
   getMediaObjectMetadata,
   getMissingMediaStorageEnvironment,
 } from "@/lib/media-storage";
-import { getVideoUploadPartCount } from "@/lib/media-upload";
+import {
+  getMediaUploadErrorLabel,
+  getVideoUploadPartCount,
+} from "@/lib/media-upload";
 import {
   createVideoUploadToken,
   verifyVideoUploadToken,
@@ -178,6 +181,14 @@ export async function POST(request: Request) {
       }
       if (
         error instanceof Error &&
+        (error.message.startsWith("Media storage is not configured.") ||
+          error.message === "AWS_ENDPOINT_URL_S3 must be a valid storage endpoint URL." ||
+          error.message === "AUTH_SECRET must be configured for media uploads.")
+      ) {
+        return NextResponse.json({ error: error.message }, { status: 503 });
+      }
+      if (
+        error instanceof Error &&
         ["AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch"].includes(error.name)
       ) {
         return NextResponse.json(
@@ -185,20 +196,9 @@ export async function POST(request: Request) {
           { status: 503 },
         );
       }
-      const errorName = error instanceof Error ? error.name : "UnknownError";
-      const status =
-        typeof error === "object" &&
-        error !== null &&
-        "$metadata" in error &&
-        typeof error.$metadata === "object" &&
-        error.$metadata !== null &&
-        "httpStatusCode" in error.$metadata &&
-        typeof error.$metadata.httpStatusCode === "number"
-          ? `, HTTP ${error.$metadata.httpStatusCode}`
-          : "";
       return NextResponse.json(
         {
-          error: `Video upload setup failed while ${uploadStage} (${errorName}${status}). Check the application server's Neon storage endpoint, credentials, and site-media bucket permissions.`,
+          error: `Video upload setup failed while ${uploadStage} (${getMediaUploadErrorLabel(error)}). Check the deployed application's Neon storage settings and site-media bucket permissions.`,
         },
         { status: 503 },
       );

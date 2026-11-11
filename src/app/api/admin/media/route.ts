@@ -2,7 +2,16 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma, StaffRole } from "@prisma/client";
 import { auth } from "@/auth";
-import { deleteMediaObject, uploadMediaObject } from "@/lib/media-storage";
+import {
+  deleteMediaObject,
+  getMissingMediaStorageEnvironment,
+  uploadMediaObject,
+} from "@/lib/media-storage";
+import {
+  getMediaUploadErrorLabel,
+  maxImageUploadBytes,
+  resolveSupportedImageMimeType,
+} from "@/lib/media-upload";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -17,7 +26,6 @@ const allowedTypes = {
   "image/gif": { extension: "gif", signature: [0x47, 0x49, 0x46, 0x38] },
 } as const;
 
-const maxFileSize = 4 * 1024 * 1024;
 const allowedCategories = new Set([
   "General",
   "Excursion",
@@ -62,7 +70,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Request origin is not allowed." }, { status: 403 });
   }
   const contentLength = Number(request.headers.get("content-length"));
-  if (contentLength > maxFileSize + 32 * 1024) {
+  if (contentLength > maxImageUploadBytes + 32 * 1024) {
     return NextResponse.json(
       { error: "Images must be 4 MB or smaller." },
       { status: 413 },
@@ -87,7 +95,7 @@ export async function POST(request: Request) {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: "Choose an image to upload." }, { status: 400 });
   }
-  if (file.size > maxFileSize) {
+  if (file.size > maxImageUploadBytes) {
     return NextResponse.json(
       { error: "Images must be 4 MB or smaller." },
       { status: 413 },
@@ -106,15 +114,25 @@ export async function POST(request: Request) {
   if (typeof category !== "string" || !allowedCategories.has(category)) {
     return NextResponse.json({ error: "Choose a valid media category." }, { status: 400 });
   }
-  if (!Object.hasOwn(allowedTypes, file.type)) {
+
+  const mimeType = resolveSupportedImageMimeType(file.name, file.type);
+  if (!mimeType) {
     return NextResponse.json(
       { error: "Upload a JPEG, PNG, WebP, or GIF image." },
       { status: 415 },
     );
   }
 
-  const mimeType = file.type as keyof typeof allowedTypes;
-  const bytes = Buffer.from(await file.arrayBuffer());
+  let bytes: Buffer;
+  try {
+    bytes = Buffer.from(await file.arrayBuffer());
+  } catch (error) {
+    console.error("Could not read the selected image file.", error);
+    return NextResponse.json(
+      { error: "The selected image could not be read from its storage. Re-select it and try again." },
+      { status: 400 },
+    );
+  }
   if (!hasExpectedSignature(bytes, mimeType)) {
     return NextResponse.json(
       { error: "The image contents do not match the selected file type." },
@@ -124,9 +142,21 @@ export async function POST(request: Request) {
 
   const key = `uploads/${randomUUID()}.${allowedTypes[mimeType].extension}`;
   let uploaded = false;
+  let uploadStage = "checking storage configuration";
   try {
+    const missingEnvironment = getMissingMediaStorageEnvironment();
+    if (missingEnvironment.length) {
+      return NextResponse.json(
+        {
+          error: `Image storage is not configured on the application server. Missing: ${missingEnvironment.join(", ")}.`,
+        },
+        { status: 503 },
+      );
+    }
+    uploadStage = "uploading the image to Neon Object Storage";
     await uploadMediaObject(key, bytes, mimeType);
     uploaded = true;
+    uploadStage = "saving the media record and audit log to the database";
     const media = await prisma.$transaction(async (transaction) => {
       const saved = await transaction.media.create({
         data: {
@@ -186,13 +216,16 @@ export async function POST(request: Request) {
     console.error("Media upload failed.", error);
     if (
       error instanceof Error &&
-      error.message.startsWith("Media storage is not configured.")
+      (error.message.startsWith("Media storage is not configured.") ||
+        error.message === "AWS_ENDPOINT_URL_S3 must be a valid storage endpoint URL.")
     ) {
       return NextResponse.json({ error: error.message }, { status: 503 });
     }
     return NextResponse.json(
-      { error: "The image could not be saved. Check storage configuration and try again." },
-      { status: 500 },
+      {
+        error: `Image upload failed while ${uploadStage} (${getMediaUploadErrorLabel(error)}). Check the deployed application's Neon storage settings and database access, then retry.`,
+      },
+      { status: uploadStage.includes("database") ? 503 : 502 },
     );
   }
 }

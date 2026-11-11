@@ -326,14 +326,14 @@ export function AdminMediaUploadForm() {
           accept={
             mediaType === "video"
               ? "video/mp4,.mp4"
-              : "image/jpeg,image/png,image/webp,image/gif"
+              : "image/jpeg,.jpg,.jpeg,image/png,.png,image/webp,.webp,image/gif,.gif"
           }
           required
         />
         <small>
           {mediaType === "video"
             ? "MP4 · maximum 100 MB · files can be selected from your computer or a mounted external drive"
-            : "JPEG, PNG, WebP, or GIF · maximum 4 MB"}
+            : "JPEG, PNG, WebP, or GIF · maximum 4 MB · files can be selected from your computer or a mounted external drive"}
         </small>
       </label>
       <label className="field">
