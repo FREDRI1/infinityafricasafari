@@ -1,11 +1,18 @@
 "use server";
 
+import { realpath, stat } from "node:fs/promises";
+import path from "node:path";
 import { Prisma, StaffRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  heroConfigInputSchema,
+  normalizeHeroVideoPath,
+} from "@/lib/hero-config";
 import { requireStaff } from "@/lib/admin";
 import { operationalSettingsSchema } from "@/lib/operational-settings";
 import { prisma } from "@/lib/prisma";
+import { isAdminMediaSource } from "@/lib/admin-media";
 
 export async function saveOperationalSettings(formData: FormData) {
   const staff = await requireStaff([StaffRole.SUPER_ADMIN, StaffRole.ADMIN]);
@@ -49,4 +56,101 @@ export async function saveOperationalSettings(formData: FormData) {
   revalidatePath("/admin/settings");
   revalidatePath("/admin");
   redirect("/admin/settings?saved=1");
+}
+
+export async function saveHeroConfig(formData: FormData) {
+  const staff = await requireStaff([StaffRole.SUPER_ADMIN, StaffRole.ADMIN]);
+  const rawImages = formData.get("imageUrls");
+  let imageUrls: unknown;
+  try {
+    imageUrls = JSON.parse(typeof rawImages === "string" ? rawImages : "");
+  } catch {
+    throw new Error("The selected hero images could not be read. Please choose them again.");
+  }
+
+  const parsed = heroConfigInputSchema.safeParse({
+    mode: formData.get("mode"),
+    imageUrls,
+    videoUrl: formData.get("videoUrl") ?? "",
+    headingText: formData.get("headingText") ?? "",
+    subheadingText: formData.get("subheadingText") ?? "",
+  });
+  if (!parsed.success) {
+    throw new Error(
+      `Homepage hero settings are invalid: ${parsed.error.issues[0]?.message ?? "check the form."}`,
+    );
+  }
+
+  if (parsed.data.mode === "VIDEO") {
+    const videoPath = normalizeHeroVideoPath(parsed.data.videoUrl);
+    if (!videoPath) throw new Error("Enter a safe local MP4 path under /assets/.");
+    const publicRoot = path.resolve(process.cwd(), "public");
+    const absolutePath = path.resolve(publicRoot, `.${videoPath}`);
+    const relativePath = path.relative(publicRoot, absolutePath);
+    if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+      throw new Error("The video path must stay inside the public assets directory.");
+    }
+    try {
+      const actualPublicRoot = await realpath(publicRoot);
+      const actualPath = await realpath(absolutePath);
+      const actualRelativePath = path.relative(actualPublicRoot, actualPath);
+      if (
+        actualRelativePath.startsWith("..") ||
+        path.isAbsolute(actualRelativePath)
+      ) {
+        throw new Error("The video path must resolve inside the public assets directory.");
+      }
+      const file = await stat(actualPath);
+      if (!file.isFile()) throw new Error("The selected video asset is not a file.");
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        throw new Error("The video asset was not found. Add the MP4 to public first.");
+      }
+      throw error;
+    }
+  } else {
+    const validImages = await Promise.all(
+      parsed.data.imageUrls.map((image) => isAdminMediaSource(image)),
+    );
+    if (validImages.some((valid) => !valid)) {
+      throw new Error("One or more selected images are no longer in the media library.");
+    }
+  }
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.heroConfig.upsert({
+      where: { id: "homepage" },
+      update: {
+        mode: parsed.data.mode,
+        videoUrl: parsed.data.mode === "VIDEO" ? parsed.data.videoUrl : null,
+        imageUrls: parsed.data.imageUrls,
+        headingText: parsed.data.headingText,
+        subheadingText: parsed.data.subheadingText,
+      },
+      create: {
+        id: "homepage",
+        mode: parsed.data.mode,
+        videoUrl: parsed.data.mode === "VIDEO" ? parsed.data.videoUrl : null,
+        imageUrls: parsed.data.imageUrls,
+        headingText: parsed.data.headingText,
+        subheadingText: parsed.data.subheadingText,
+      },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: staff.id,
+        action: "HOMEPAGE_HERO_UPDATED",
+        entityType: "HeroConfig",
+        entityId: "homepage",
+        details: {
+          mode: parsed.data.mode,
+          imageCount: parsed.data.imageUrls.length,
+        } satisfies Prisma.InputJsonObject,
+      },
+    });
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings?heroSaved=1");
 }

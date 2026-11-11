@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { CheckCircle2, LockKeyhole, Settings2 } from "lucide-react";
 import { AdminTopbar } from "@/components/admin-topbar";
 import { saveOperationalSettings } from "@/app/admin/settings/actions";
+import { AdminHeroSettings } from "@/components/admin-hero-settings";
 import { requireStaff } from "@/lib/admin";
+import { getAdminMediaChoices } from "@/lib/admin-media";
+import { getHeroConfig } from "@/lib/hero-config";
 import { getOperationalSettings } from "@/lib/operational-settings";
 import { StaffRole } from "@prisma/client";
 
@@ -15,12 +18,14 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; heroSaved?: string }>;
 }) {
   const staff = await requireStaff([StaffRole.SUPER_ADMIN, StaffRole.ADMIN]);
-  const [settings, params] = await Promise.all([
+  const [settings, params, heroConfig, mediaChoices] = await Promise.all([
     getOperationalSettings(),
     searchParams,
+    getHeroConfig(),
+    getAdminMediaChoices(),
   ]);
 
   return (
@@ -30,7 +35,7 @@ export default async function AdminSettingsPage({
         <div>
           <span className="eyebrow">System administration</span>
           <h1>Settings</h1>
-          <p>Manage booking availability and where new request alerts are sent.</p>
+          <p>Manage your homepage presentation and booking operations.</p>
         </div>
       </header>
 
@@ -40,6 +45,12 @@ export default async function AdminSettingsPage({
           Your operational settings have been saved.
         </p>
       )}
+
+      <AdminHeroSettings
+        config={heroConfig}
+        mediaChoices={mediaChoices}
+        saved={params.heroSaved === "1"}
+      />
 
       <section className="settings-panel" aria-labelledby="booking-settings-title">
         <div className="settings-panel-heading">

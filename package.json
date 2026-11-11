@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/booking-validation.test.ts tests/pricing.test.ts tests/homepage-content.test.ts tests/marketplace-clicks.test.ts tests/operational-settings.test.ts",
+    "test": "tsx --test tests/booking-validation.test.ts tests/pricing.test.ts tests/homepage-content.test.ts tests/marketplace-clicks.test.ts tests/operational-settings.test.ts tests/hero-config.test.ts",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
     "db:migrate": "prisma migrate deploy",

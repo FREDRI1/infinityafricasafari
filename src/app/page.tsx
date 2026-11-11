@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowDown,
   ArrowUpRight,
   Compass,
   Clock3,
@@ -10,69 +9,31 @@ import {
   ShieldCheck,
   Star,
 } from "lucide-react";
-import { SafariSearch } from "@/components/safari-search";
+import { HomepageHero } from "@/components/homepage-hero";
 import { getHomepageContent } from "@/lib/homepage-content";
 import { getPublicDestinations } from "@/lib/catalog";
 import { formatPrice } from "@/lib/pricing";
 import { getPublicMediaUrl } from "@/lib/media-storage";
+import { getHeroConfig, isLocalHeroImagePath } from "@/lib/hero-config";
 
 export default async function Home() {
-  const [destinations, homepageContent] = await Promise.all([
+  const [destinations, homepageContent, heroConfig] = await Promise.all([
     getPublicDestinations(),
     getHomepageContent(),
+    getHeroConfig(),
   ]);
   const excursions = homepageContent.excursions;
   const guestReviews = homepageContent.reviews;
 
   return (
     <main>
-      <section className="hero">
-        <Image
-          src="/assets/images/hero/savannah-dawn.jpg"
-          alt="Safari vehicle on the African savannah at sunset"
-          fill
-          priority
-          sizes="100vw"
-          className="hero-image"
-        />
-        <div className="hero-shade" />
-        <div className="hero-content page-width">
-          <div className="hero-copy">
-            <span className="eyebrow eyebrow-light">
-              <span className="eyebrow-line" />
-              A safari, made yours
-            </span>
-            <h1>
-              Africa is not
-              <br />
-              just a place.
-              <br />
-              <em>It stays with you.</em>
-            </h1>
-            <p>
-              Thoughtful journeys, shaped around the way you want to experience
-              the wild.
-            </p>
-            <div className="hero-actions">
-              <Link className="button button-gold" href="/safaris">
-                Explore our journeys <ArrowUpRight size={17} aria-hidden="true" />
-              </Link>
-              <span className="hero-note">Personal planning. Local perspective.</span>
-            </div>
-          </div>
-          <div className="hero-caption">
-            <span>01 — The first light</span>
-            <span>East Africa</span>
-          </div>
-          <SafariSearch
-            destinations={destinations.map(({ name, slug }) => ({ name, slug }))}
-          />
-          <a className="scroll-cue" href="#destinations">
-            <span>Explore destinations</span>
-            <ArrowDown size={15} aria-hidden="true" />
-          </a>
-        </div>
-      </section>
+      <HomepageHero
+        config={heroConfig}
+        destinations={destinations.map(({ name, slug }) => ({ name, slug }))}
+        imageUrls={heroConfig.imageUrls.map((image) =>
+          isLocalHeroImagePath(image) ? image : getPublicMediaUrl(image),
+        )}
+      />
 
       <section className="destination-section section-pad" id="destinations">
         <div className="page-width">

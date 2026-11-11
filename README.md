@@ -17,6 +17,7 @@ Premium safari discovery and assisted booking platform built with Next.js, stric
 - Persistent media uploads to Neon Object Storage and a role-protected media library.
 - Public marketplace click analytics with country-level reporting and no stored visitor identifiers.
 - Homepage excursion and guest review content managed in the admin website-content editor.
+- Homepage hero image, slideshow, video mode, and overlay copy managed in Settings.
 - Booking search, status history, customer communication notes and WhatsApp hand-off links.
 - Manually recorded payments remain unverified until an authorized administrator verifies them.
 - Sample itinerary concepts and licensed illustrative Unsplash photography; no actual prices or business contact details are assumed.
@@ -71,4 +72,4 @@ Run `npm run test` for booking, pricing, homepage content, and marketplace click
 
 ## Media
 
-Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). Staff with content access can upload JPEG, PNG, WebP, or GIF images up to 4 MB from Admin → Media library. Uploads are stored in the production branch's public-read `site-media` bucket and can be selected in safari, destination, and homepage content editors. Upload only images you own or are licensed to use. No video upload is supported.
+Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). Staff with content access can upload JPEG, PNG, WebP, or GIF images up to 4 MB from Admin → Media library. Uploads are stored in the production branch's public-read `site-media` bucket and can be selected in safari, destination, homepage content, and hero editors. To use a video hero, place an MP4 under `public/assets/` and enter its local public path under Admin → Settings. Video uploads are not supported. Upload only images and video you own or are licensed to use.

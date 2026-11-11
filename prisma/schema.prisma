@@ -49,6 +49,12 @@ enum CommunicationChannel {
   OTHER
 }
 
+enum HeroMode {
+  SINGLE_IMAGE
+  ANIMATED_SLIDESHOW
+  VIDEO
+}
+
 model User {
   id               String                 @id @default(cuid())
   name             String?
@@ -331,6 +337,17 @@ model WebsiteSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+model HeroConfig {
+  id             String   @id @default("homepage")
+  mode           HeroMode @default(SINGLE_IMAGE)
+  videoUrl       String?
+  imageUrls      String[] @default([])
+  headingText    String   @default("Africa is not just a place. It stays with you.")
+  subheadingText String   @default("Thoughtful journeys, shaped around the way you want to experience the wild.")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model AuditLog {
