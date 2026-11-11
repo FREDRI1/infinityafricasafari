@@ -53,10 +53,7 @@ export default async function Home() {
               <span className="eyebrow">DESTINATIONS & EXPERIENCES</span>
               <h2>Discover East Africa, <em>one journey at a time.</em></h2>
             </div>
-            <p>
-              Four extraordinary countries. Curated journeys, unforgettable safaris and authentic 
-              experiences shaped by the spirit of East Africa.
-            </p>
+            
           </div>
           <div className="destination-grid">
             {destinations.map((destination, index) => (
