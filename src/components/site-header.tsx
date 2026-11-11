@@ -2,23 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, Menu, X } from "lucide-react";
-
-const links = [
-  { href: "/safaris", label: "Explore safaris" },
-  { href: "/#destinations", label: "Destinations" },
-  { href: "/#our-approach", label: "Our approach" },
-];
+import { ArrowDown, ArrowUpRight, Menu, X } from "lucide-react";
+import { destinations } from "@/data/safaris";
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <>
-      <div className="topline">
-        <p>Thoughtful journeys. Wild places. Your own kind of Africa.</p>
-        <span>Kenya · Tanzania · Uganda · Rwanda</span>
-      </div>
       <header className="site-header">
         <Link
           href="/"
@@ -36,11 +27,23 @@ export function SiteHeader() {
         </Link>
 
         <nav className="desktop-nav" aria-label="Main navigation">
-          {links.map((link) => (
-            <Link href={link.href} key={link.href}>
-              {link.label}
-            </Link>
-          ))}
+          <Link href="/safaris">Explore safaris</Link>
+          <details className="destination-dropdown">
+            <summary>
+              Destinations <ArrowDown size={14} aria-hidden="true" />
+            </summary>
+            <div className="destination-dropdown-panel">
+              {destinations.map((destination) => (
+                <Link
+                  href={`/destinations/${destination.slug}`}
+                  key={destination.slug}
+                >
+                  {destination.name}
+                </Link>
+              ))}
+            </div>
+          </details>
+          <Link href="/#our-approach">Our approach</Link>
         </nav>
 
         <Link className="button button-dark header-cta" href="/booking">
@@ -60,15 +63,28 @@ export function SiteHeader() {
 
       {menuOpen && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          {links.map((link) => (
-            <Link
-              href={link.href}
-              key={link.href}
-              onClick={() => setMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link href="/safaris" onClick={() => setMenuOpen(false)}>
+            Explore safaris
+          </Link>
+          <details className="mobile-destination-dropdown">
+            <summary>
+              Destinations <ArrowDown size={14} aria-hidden="true" />
+            </summary>
+            <div>
+              {destinations.map((destination) => (
+                <Link
+                  href={`/destinations/${destination.slug}`}
+                  key={destination.slug}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {destination.name}
+                </Link>
+              ))}
+            </div>
+          </details>
+          <Link href="/#our-approach" onClick={() => setMenuOpen(false)}>
+            Our approach
+          </Link>
           <Link href="/booking" onClick={() => setMenuOpen(false)}>
             Plan your safari <ArrowUpRight size={16} aria-hidden="true" />
           </Link>
