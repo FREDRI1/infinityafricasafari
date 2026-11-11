@@ -11,13 +11,14 @@ export const metadata: Metadata = {
 export default async function BookingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ safari?: string }>;
+  searchParams: Promise<{ safari?: string; activity?: string }>;
 }) {
-  const { safari = "" } = await searchParams;
+  const { safari = "", activity = "" } = await searchParams;
   const safaris = await getPublicSafaris();
   const initialSafariSlug = safaris.some((item) => item.slug === safari)
     ? safari
     : "";
+  const initialRequestedActivities = activity.trim().slice(0, 120);
 
   return (
     <main className="page-shell booking-page">
@@ -37,6 +38,7 @@ export default async function BookingPage({
         <BookingForm
           safaris={safaris}
           initialSafariSlug={initialSafariSlug}
+          initialRequestedActivities={initialRequestedActivities}
         />
         <aside className="booking-aside">
           <span className="eyebrow">What happens next</span>

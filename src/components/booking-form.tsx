@@ -16,9 +16,14 @@ import type { Safari } from "@/data/safaris";
 type Props = {
   safaris: Safari[];
   initialSafariSlug?: string;
+  initialRequestedActivities?: string;
 };
 
-export function BookingForm({ safaris, initialSafariSlug = "" }: Props) {
+export function BookingForm({
+  safaris,
+  initialSafariSlug = "",
+  initialRequestedActivities = "",
+}: Props) {
   const router = useRouter();
   const [submissionId, setSubmissionId] = useState<string>();
   const form = useForm<BookingFormInput, undefined, BookingFormOutput>({
@@ -29,7 +34,7 @@ export function BookingForm({ safaris, initialSafariSlug = "" }: Props) {
       adults: 2,
       children: 0,
       rooms: 1,
-      requestedActivities: "",
+      requestedActivities: initialRequestedActivities,
       accommodationPreference: "",
       fullName: "",
       email: "",

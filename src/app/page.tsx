@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowUpRight,
   Compass,
+  Clock3,
   Heart,
   Leaf,
   MapPin,
@@ -11,6 +12,33 @@ import {
 } from "lucide-react";
 import { SafariSearch } from "@/components/safari-search";
 import { getPublicDestinations } from "@/lib/catalog";
+
+const excursions = [
+  {
+    title: "Kaya Kinondo Sacred Forest",
+    duration: "Half day",
+    description: "A guided cultural and nature walk through a sacred coastal forest.",
+    price: "$85",
+    image: "/assets/images/excursions/kaya-kinondo.jpg",
+    imageAlt: "Visitors walking beneath the canopy at Kaya Kinondo Sacred Forest",
+  },
+  {
+    title: "Malindi Marine National Park",
+    duration: "Half day",
+    description: "Snorkelling and coral reef exploration in the Indian Ocean.",
+    price: "$80",
+    image: "/assets/images/excursions/malindi-reef.jpg",
+    imageAlt: "Coral and sponges at Malindi Reef",
+  },
+  {
+    title: "Funzi & Kinazini Islands",
+    duration: "Full day",
+    description: "A mangrove dhow cruise and a relaxed sandbank swim.",
+    price: "$90",
+    image: "/assets/images/excursions/kenya-coast.jpg",
+    imageAlt: "Kenyan coastline at Diani Beach, shown as illustrative coastal photography",
+  },
+];
 
 export default async function Home() {
   const destinations = await getPublicDestinations();
@@ -104,6 +132,78 @@ export default async function Home() {
           <p className="editorial-note">
             Destination images are licensed illustrative photography, not a
             claim that they depict a specific itinerary.
+          </p>
+        </div>
+      </section>
+
+      <section className="excursions-section section-pad" id="excursions">
+        <div className="page-width">
+          <div className="section-heading excursions-heading">
+            <span className="eyebrow">A little more to discover</span>
+            <h2>Featured <em>Excursions</em></h2>
+            <p>Explore unforgettable day adventures along the Kenyan coast.</p>
+          </div>
+          <div className="excursions-grid">
+            {excursions.map((excursion) => (
+              <article className="excursion-card" key={excursion.title}>
+                <div className="excursion-image">
+                  <Image
+                    src={excursion.image}
+                    alt={excursion.imageAlt}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 33vw"
+                  />
+                </div>
+                <div className="excursion-body">
+                  <h3>{excursion.title}</h3>
+                  <span className="excursion-duration">
+                    <Clock3 size={12} aria-hidden="true" />
+                    {excursion.duration}
+                  </span>
+                  <p>{excursion.description}</p>
+                  <div className="excursion-price">
+                    <strong>From {excursion.price}</strong>
+                    <span>Indicative estimate · per person</span>
+                  </div>
+                  <Link
+                    className="button excursion-button"
+                    href={`/booking?activity=${encodeURIComponent(excursion.title)}`}
+                  >
+                    Enquire about excursion
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="excursion-note">
+            Prices are indicative estimates in USD; availability and final
+            pricing are confirmed by our team. Images are illustrative. Photo
+            credits:{" "}
+            <a
+              href="https://commons.wikimedia.org/wiki/File:Kaya_Kinondo,_Sacred_Forest,_Kenya.jpg"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ninara (CC BY 2.0)
+            </a>
+            ,{" "}
+            <a
+              href="https://commons.wikimedia.org/wiki/File:Corals_at_Malindi_Reef.jpg"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ordercrazy (CC0)
+            </a>
+            , and{" "}
+            <a
+              href="https://commons.wikimedia.org/wiki/File:Diani_Beach_-_December_2023.jpg"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Tall Black (CC BY-SA 4.0)
+            </a>{" "}
+            via Wikimedia Commons.
           </p>
         </div>
       </section>
