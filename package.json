@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/booking-validation.test.ts tests/pricing.test.ts tests/homepage-content.test.ts",
+    "test": "tsx --test tests/booking-validation.test.ts tests/pricing.test.ts tests/homepage-content.test.ts tests/marketplace-clicks.test.ts tests/operational-settings.test.ts",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
     "db:migrate": "prisma migrate deploy",
@@ -27,6 +27,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.91.0",
+    "recharts": "^3.10.1",
     "resend": "^6.38.0",
     "zod": "^4.6.7"
   },

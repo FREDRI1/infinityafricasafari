@@ -28,7 +28,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email.toLocaleLowerCase() },
         });
-        if (!user?.passwordHash) return null;
+        if (!user?.isActive || !user.passwordHash) return null;
 
         const validPassword = await bcrypt.compare(
           parsed.data.password,
@@ -42,19 +42,26 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.image,
           role: user.role,
+          authVersion: user.authVersion,
         };
       },
     }),
   ],
   callbacks: {
     jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+        token.authVersion =
+          typeof user.authVersion === "number" ? user.authVersion : 0;
+      }
       return token;
     },
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
         session.user.role = token.role as StaffRole;
+        session.user.authVersion =
+          typeof token.authVersion === "number" ? token.authVersion : 0;
       }
       return session;
     },

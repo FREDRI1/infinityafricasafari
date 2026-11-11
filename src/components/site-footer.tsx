@@ -59,6 +59,10 @@ export function SiteFooter() {
       </div>
       <div className="footer-bottom">
         <span>© Infinity Africa Safari</span>
+        <small>
+          We record anonymous clicks and country-level visit data to improve
+          our journeys. IP addresses and visitor IDs are not stored.
+        </small>
         <span>Every journey begins with a conversation.</span>
       </div>
     </footer>

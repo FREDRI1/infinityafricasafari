@@ -17,6 +17,7 @@ export function SafariCard({ safari }: { safari: Safari }) {
         className="safari-card-image"
         href={`/safaris/${safari.slug}`}
         aria-label={`View ${safari.title}`}
+        data-marketplace-click={`Safari package card: ${safari.title}`}
       >
         <Image
           src={safari.image}
@@ -38,7 +39,12 @@ export function SafariCard({ safari }: { safari: Safari }) {
           </span>
         </div>
         <h3>
-          <Link href={`/safaris/${safari.slug}`}>{safari.title}</Link>
+          <Link
+            href={`/safaris/${safari.slug}`}
+            data-marketplace-click={`Safari package card: ${safari.title}`}
+          >
+            {safari.title}
+          </Link>
         </h3>
         {startingPrice !== undefined && (
           <div className="safari-card-price">
@@ -47,7 +53,11 @@ export function SafariCard({ safari }: { safari: Safari }) {
           </div>
         )}
         <p>{safari.summary}</p>
-        <Link className="text-link" href={`/safaris/${safari.slug}`}>
+        <Link
+          className="text-link"
+          href={`/safaris/${safari.slug}`}
+          data-marketplace-click={`Safari package card: ${safari.title}`}
+        >
           Explore this journey <ArrowUpRight size={16} aria-hidden="true" />
         </Link>
       </div>

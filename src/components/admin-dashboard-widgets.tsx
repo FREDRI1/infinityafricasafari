@@ -429,7 +429,7 @@ export function DashboardQuickActions({ isEditor }: { isEditor: boolean }) {
     { label: "Add new safari", href: "/admin/safaris/new", icon: Compass, primary: true },
     ...(!isEditor ? [{ label: "Manage bookings", href: "/admin/bookings", icon: CalendarDays, primary: false }] : []),
     { label: "Update content", href: "/admin/content", icon: FileText, primary: false },
-    ...(!isEditor ? [{ label: "View reports", href: "#reports", icon: ChartNoAxesCombined, primary: false }] : []),
+    ...(!isEditor ? [{ label: "View reports", href: "/admin/reports", icon: ChartNoAxesCombined, primary: false }] : []),
   ];
 
   return (

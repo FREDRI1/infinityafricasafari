@@ -11,8 +11,11 @@ Premium safari discovery and assisted booking platform built with Next.js, stric
 - PostgreSQL booking, customer, payment, history and audit models.
 - Confirmation email and administrator notification through Resend when configured.
 - Private staff sign-in and role-guarded booking dashboard.
+- Super-admin staff account and role management, including account deactivation and audit history.
+- Booking operations settings for accepting requests and routing staff notification email.
 - Role-guarded safari and destination management, itinerary editing, and archive workflows.
 - Persistent media uploads to Neon Object Storage and a role-protected media library.
+- Public marketplace click analytics with country-level reporting and no stored visitor identifiers.
 - Homepage excursion and guest review content managed in the admin website-content editor.
 - Booking search, status history, customer communication notes and WhatsApp hand-off links.
 - Manually recorded payments remain unverified until an authorized administrator verifies them.
@@ -49,6 +52,8 @@ Set `AUTH_URL` to the canonical HTTPS deployment URL if Auth.js does not detect 
 
 After adding or changing Prisma migrations, apply them deliberately to the intended Neon branch with `npm run db:migrate`; do not run migrations as an automatic build step.
 
+The public click tracker records element labels, destination paths, timestamps, and Vercel country codes. It does not persist visitor IP addresses or unique visitor identifiers. The endpoint applies request validation and per-instance rate limiting; configure Vercel Firewall rate limits for additional protection at the edge.
+
 ## Data and payment rules
 
 Customers submit requests; they do not pay online. Staff personally check availability, agree a final amount and currency, record any payment received outside the site, and verify it separately. The application stores monetary values as PostgreSQL `Decimal` and snapshots customer and safari details at request time.
@@ -62,7 +67,7 @@ npm run db:validate
 npm run build
 ```
 
-Run `npm run test` for booking validation tests. Database-backed flows require valid service configuration to test end-to-end.
+Run `npm run test` for booking, pricing, homepage content, and marketplace click tests. Database-backed flows require valid service configuration to test end-to-end.
 
 ## Media
 

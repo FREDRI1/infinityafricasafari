@@ -30,6 +30,7 @@ type AdminNavItem = {
   href?: string;
   disabled?: boolean;
   icon: LucideIcon;
+  roles?: StaffRole[];
 };
 
 const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
@@ -63,9 +64,19 @@ const navigationGroups: { label: string; items: AdminNavItem[] }[] = [
   {
     label: "System admin",
     items: [
-      { label: "Users & roles", disabled: true, icon: UsersRound },
-      { label: "Settings", disabled: true, icon: Settings },
-      { label: "Reports & analytics", href: "/admin#reports", icon: ChartNoAxesCombined },
+      {
+        label: "Users & roles",
+        href: "/admin/users",
+        icon: UsersRound,
+        roles: ["SUPER_ADMIN"],
+      },
+      {
+        label: "Settings",
+        href: "/admin/settings",
+        icon: Settings,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      { label: "Reports & analytics", href: "/admin/reports", icon: ChartNoAxesCombined },
     ],
   },
 ];
@@ -92,7 +103,7 @@ export function AdminTopbar({ role, pendingCount }: AdminTopbarProps) {
         {navigationGroups.map((group) => (
           <div className="admin-nav-group" key={group.label}>
             <h2>{group.label}</h2>
-            {group.items.map((item) => {
+            {group.items.filter((item) => !item.roles || item.roles.includes(role)).map((item) => {
               const Icon = item.icon;
               const isCurrent = Boolean(
                 item.href &&
@@ -105,7 +116,7 @@ export function AdminTopbar({ role, pendingCount }: AdminTopbarProps) {
                 isEditor &&
                 (item.href === "/admin/bookings" ||
                   item.href === "/admin" ||
-                  item.href === "/admin#reports");
+                  item.href === "/admin/reports");
 
               return isUnavailable || isRestricted ? (
                 <span

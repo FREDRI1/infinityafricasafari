@@ -4,6 +4,7 @@ type BookingEmailDetails = {
   reference: string;
   customerName: string;
   customerEmail: string;
+  notificationEmail?: string;
   safariTitle: string;
   travelDate: string;
   guests: number;
@@ -25,7 +26,8 @@ function escapeHtml(value: string) {
 export async function sendBookingEmails(details: BookingEmailDetails) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  const adminEmail =
+    details.notificationEmail?.trim() || process.env.ADMIN_NOTIFICATION_EMAIL;
 
   if (!apiKey || !from || !adminEmail) {
     console.warn(

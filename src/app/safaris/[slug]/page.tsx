@@ -141,6 +141,7 @@ export default async function SafariDetailPage({ params }: Props) {
             <Link
               className="button button-dark detail-booking-cta"
               href={`/booking?safari=${safari.slug}`}
+              data-marketplace-click={`Request journey button: ${safari.title}`}
             >
               Request this journey <ArrowUpRight size={16} aria-hidden="true" />
             </Link>

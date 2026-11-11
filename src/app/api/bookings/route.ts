@@ -1,11 +1,13 @@
-import { createHmac, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { Prisma, BookingStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getPublicSafariBySlug } from "@/lib/catalog";
 import { sendBookingEmails } from "@/lib/booking-email";
 import { bookingRequestSchema } from "@/lib/booking-validation";
 import { findSeasonalRate } from "@/lib/pricing";
+import { getOperationalSettings } from "@/lib/operational-settings";
 import { prisma } from "@/lib/prisma";
+import { createRequestRateLimitKey } from "@/lib/request-rate-limit";
 
 function generateReference() {
   const year = new Date().getUTCFullYear();
@@ -14,22 +16,7 @@ function generateReference() {
 }
 
 async function isRateLimited(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  const clientIp =
-    forwardedFor
-      ?.split(",")
-      .map((address) => address.trim())
-      .filter(Boolean)
-      .at(-1) ||
-    (process.env.NODE_ENV === "development" ? "localhost" : undefined);
-  const secret = process.env.AUTH_SECRET;
-  if (!clientIp || !secret) {
-    throw new Error("Trusted client IP and rate limit secret are required.");
-  }
-
-  const key = createHmac("sha256", secret)
-    .update(`booking-request:${clientIp.slice(0, 64)}`)
-    .digest("hex");
+  const key = createRequestRateLimitKey(request, "booking-request");
   const now = new Date();
   const resetAt = new Date(now.getTime() + 15 * 60 * 1000);
   const result = await prisma.$queryRaw<{ count: number }[]>`
@@ -100,6 +87,23 @@ export async function POST(request: Request) {
     console.error("Could not enforce booking request rate limit.", error);
     return NextResponse.json(
       { error: "The booking service is not available. Please try again later." },
+      { status: 503 },
+    );
+  }
+
+  let operationalSettings: Awaited<ReturnType<typeof getOperationalSettings>>;
+  try {
+    operationalSettings = await getOperationalSettings();
+  } catch (error) {
+    console.error("Could not load booking operational settings.", error);
+    return NextResponse.json(
+      { error: "The booking service is not available. Please try again later." },
+      { status: 503 },
+    );
+  }
+  if (!operationalSettings.bookingRequestsEnabled) {
+    return NextResponse.json(
+      { error: "Booking requests are temporarily paused. Please contact our team." },
       { status: 503 },
     );
   }
@@ -281,6 +285,7 @@ export async function POST(request: Request) {
       reference: booking.reference,
       customerName: values.fullName,
       customerEmail: normalizedEmail,
+      notificationEmail: operationalSettings.notificationEmail,
       safariTitle: safari.title,
       travelDate: values.travelDate,
       guests: values.adults + values.children,

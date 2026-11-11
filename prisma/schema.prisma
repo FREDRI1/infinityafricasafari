@@ -57,6 +57,8 @@ model User {
   image            String?
   passwordHash     String?
   role             StaffRole              @default(SALES_MANAGER)
+  isActive         Boolean                @default(true)
+  authVersion      Int                    @default(0)
   accounts         Account[]
   sessions         Session[]
   assignedBookings Booking[]              @relation("AssignedStaff")
@@ -164,6 +166,16 @@ model Safari {
 
   @@index([isPublished, archivedAt])
   @@index([destinationId])
+}
+
+model MarketplaceClick {
+  id             String   @id @default(cuid())
+  timestamp      DateTime @default(now())
+  elementClicked String  @db.VarChar(160)
+  targetUrl      String   @db.VarChar(2048)
+  country        String   @db.VarChar(2)
+
+  @@index([timestamp])
 }
 
 model SafariSeasonPrice {
