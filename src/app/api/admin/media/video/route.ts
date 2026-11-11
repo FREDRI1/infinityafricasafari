@@ -8,6 +8,7 @@ import {
   deleteMediaObject,
   ensureMediaUploadCors,
   getMediaObjectMetadata,
+  getMissingMediaStorageEnvironment,
 } from "@/lib/media-storage";
 import {
   createVideoUploadToken,
@@ -128,6 +129,15 @@ export async function POST(request: Request) {
     });
 
     try {
+      const missingEnvironment = getMissingMediaStorageEnvironment();
+      if (missingEnvironment.length) {
+        return NextResponse.json(
+          {
+            error: `Video storage is not configured on the application server. Missing: ${missingEnvironment.join(", ")}.`,
+          },
+          { status: 503 },
+        );
+      }
       const origin = request.headers.get("origin");
       if (!origin) {
         return NextResponse.json(
@@ -144,8 +154,23 @@ export async function POST(request: Request) {
       });
     } catch (error) {
       console.error("Could not prepare direct video upload.", error);
+      if (error instanceof Error && error.name === "NoSuchBucket") {
+        return NextResponse.json(
+          { error: "The configured video media bucket is unavailable. Check the Neon storage bucket setup." },
+          { status: 503 },
+        );
+      }
+      if (
+        error instanceof Error &&
+        ["AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch"].includes(error.name)
+      ) {
+        return NextResponse.json(
+          { error: "The application server cannot access video storage. Check that its Neon storage credentials are valid and include storage write access." },
+          { status: 503 },
+        );
+      }
       return NextResponse.json(
-        { error: "Video storage is unavailable. Check the media storage configuration." },
+        { error: "The video storage service could not prepare this upload. Check the application server logs for the storage error." },
         { status: 503 },
       );
     }

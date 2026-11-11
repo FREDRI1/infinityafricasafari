@@ -13,19 +13,49 @@ export const SITE_MEDIA_BUCKET = "site-media";
 
 let client: S3Client | undefined;
 
+const requiredStorageEnvironment = [
+  "AWS_ENDPOINT_URL_S3",
+  "AWS_REGION",
+  "AWS_ACCESS_KEY_ID",
+  "AWS_SECRET_ACCESS_KEY",
+] as const;
+
+export function getMissingMediaStorageEnvironment() {
+  return requiredStorageEnvironment.filter(
+    (name) => !process.env[name]?.trim(),
+  );
+}
+
 function getStorageConfig() {
   const endpoint = process.env.AWS_ENDPOINT_URL_S3;
   const region = process.env.AWS_REGION;
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 
-  if (!endpoint || !region || !accessKeyId || !secretAccessKey) {
+  const missing = getMissingMediaStorageEnvironment();
+  if (
+    !endpoint?.trim() ||
+    !region?.trim() ||
+    !accessKeyId?.trim() ||
+    !secretAccessKey?.trim()
+  ) {
     throw new Error(
-      "Media storage is not configured. Add the Neon Object Storage environment variables to the application.",
+      `Media storage is not configured. Missing environment variables: ${missing.join(", ")}.`,
     );
   }
 
-  return { endpoint, region, accessKeyId, secretAccessKey };
+  try {
+    new URL(endpoint);
+  } catch {
+    throw new Error("AWS_ENDPOINT_URL_S3 must be a valid storage endpoint URL.");
+  }
+
+  return {
+    endpoint: endpoint.trim(),
+    region: region.trim(),
+    accessKeyId: accessKeyId.trim(),
+    secretAccessKey: secretAccessKey.trim(),
+  };
 }
 
 function getStorageClient() {

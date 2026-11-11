@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { isSupportedMp4File } from "@/lib/media-upload";
 
 type UploadResult = {
   error?: string;
@@ -88,7 +89,7 @@ export function AdminMediaUploadForm() {
     let completed = false;
     try {
       if (mediaType === "video") {
-        if (file.type !== "video/mp4") {
+        if (!isSupportedMp4File(file)) {
           throw new Error("Choose an MP4 video file.");
         }
         if (file.size > maxVideoBytes) {
@@ -194,7 +195,7 @@ export function AdminMediaUploadForm() {
         />
         <small>
           {mediaType === "video"
-            ? "MP4 · maximum 100 MB · uploaded directly to media storage"
+            ? "MP4 · maximum 100 MB · files can be selected from your computer or a mounted external drive"
             : "JPEG, PNG, WebP, or GIF · maximum 4 MB"}
         </small>
       </label>
