@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { SiteChrome } from "@/components/site-chrome";
+import { canPreviewMarketplace } from "@/lib/admin";
 import { getMaintenanceSettings } from "@/lib/maintenance-settings";
 import { getPublicMediaUrl } from "@/lib/media-storage";
 import "./globals.css";
@@ -51,7 +52,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const maintenance = await getMaintenanceSettings();
+  const [maintenance, canPreview] = await Promise.all([
+    getMaintenanceSettings(),
+    canPreviewMarketplace(),
+  ]);
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>
@@ -60,6 +64,7 @@ export default async function RootLayout({
             ...maintenance,
             backgroundImageUrl: getPublicMediaUrl(maintenance.backgroundImage),
           }}
+          canPreviewMarketplace={canPreview}
         >
           {children}
         </SiteChrome>

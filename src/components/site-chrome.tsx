@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MarketplaceClickTracker } from "@/components/marketplace-click-tracker";
 import { SiteFooter } from "@/components/site-footer";
@@ -10,9 +12,14 @@ import type { MaintenanceSettings } from "@/lib/maintenance-settings";
 type SiteChromeProps = {
   children: React.ReactNode;
   maintenance: MaintenanceSettings & { backgroundImageUrl: string };
+  canPreviewMarketplace: boolean;
 };
 
-export function SiteChrome({ children, maintenance }: SiteChromeProps) {
+export function SiteChrome({
+  children,
+  maintenance,
+  canPreviewMarketplace,
+}: SiteChromeProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
@@ -35,7 +42,7 @@ export function SiteChrome({ children, maintenance }: SiteChromeProps) {
 
   if (isAdminRoute) return children;
 
-  if (maintenance.enabled) {
+  if (maintenance.enabled && !canPreviewMarketplace) {
     return (
       <main
         aria-labelledby="marketplace-maintenance-heading"
@@ -62,6 +69,17 @@ export function SiteChrome({ children, maintenance }: SiteChromeProps) {
 
   return (
     <>
+      {maintenance.enabled && canPreviewMarketplace && (
+        <aside className="marketplace-preview-banner" role="status">
+          <span>
+            <strong>Admin preview</strong>
+            <span>Visitors still see the maintenance notice.</span>
+          </span>
+          <Link href="/admin/settings">
+            Return to settings <ArrowUpRight size={14} aria-hidden="true" />
+          </Link>
+        </aside>
+      )}
       <MarketplaceClickTracker />
       <SiteHeader />
       {children}

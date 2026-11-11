@@ -46,6 +46,31 @@ export async function requireStaffPermission(
   return staff;
 }
 
+export async function canPreviewMarketplace() {
+  if (!process.env.AUTH_SECRET || !process.env.DATABASE_URL) return false;
+
+  const session = await auth();
+  if (!session?.user?.id) return false;
+
+  const staff = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      role: true,
+      permissions: true,
+      isActive: true,
+      authVersion: true,
+    },
+  });
+
+  return Boolean(
+    staff?.isActive &&
+      staff.authVersion === session.user.authVersion &&
+      (staff.role === StaffRole.SUPER_ADMIN ||
+        staff.role === StaffRole.ADMIN ||
+        staff.permissions.includes(StaffPermission.SYSTEM_SETTINGS)),
+  );
+}
+
 export const bookingStaffRoles: StaffRole[] = [
   StaffRole.SUPER_ADMIN,
   StaffRole.ADMIN,

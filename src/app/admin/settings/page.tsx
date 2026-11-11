@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { CheckCircle2, LockKeyhole, Settings2, Wrench } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  LockKeyhole,
+  Settings2,
+  Wrench,
+} from "lucide-react";
 import { AdminTopbar } from "@/components/admin-topbar";
 import {
   saveMaintenanceSettings,
@@ -83,6 +90,17 @@ export default async function AdminSettingsPage({
             {maintenance.enabled ? "Marketplace locked" : "Marketplace open"}
           </span>
         </div>
+        {maintenance.enabled && (
+          <div className="maintenance-preview-link">
+            <div>
+              <strong>Need to review the live site?</strong>
+              <span>This private preview is available only to authorized staff.</span>
+            </div>
+            <Link className="button button-outline" href="/">
+              Preview marketplace <ArrowUpRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        )}
         <form action={saveMaintenanceSettings} className="settings-form">
           <label className="settings-field">
             <span>Marketplace availability</span>
