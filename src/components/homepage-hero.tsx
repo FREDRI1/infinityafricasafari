@@ -147,7 +147,7 @@ export function HomepageHero({
         <div className="hero-copy">
           <span className="eyebrow eyebrow-light">
             <span className="eyebrow-line" />
-            A safari, made yours
+            YOUR JOURNEY BEGINS HERE
           </span>
           <h1>
             {config.headingText.split("\n").map((line, index) => (
@@ -161,7 +161,7 @@ export function HomepageHero({
             <Link className="button button-gold" href="/safaris">
               Explore our journeys <ArrowUpRight size={17} aria-hidden="true" />
             </Link>
-            <span className="hero-note">Personal planning. Local perspective.</span>
+            
           </div>
         </div>
         <SafariSearch destinations={destinations} />
