@@ -31,6 +31,11 @@ export default async function AdminBookingsPage({
               { reference: { contains: query, mode: "insensitive" } },
               { customer: { fullName: { contains: query, mode: "insensitive" } } },
               { customer: { email: { contains: query, mode: "insensitive" } } },
+              {
+                safari: {
+                  is: { title: { contains: query, mode: "insensitive" } },
+                },
+              },
             ],
           }
         : {}),
@@ -68,7 +73,7 @@ export default async function AdminBookingsPage({
           <input
             name="q"
             defaultValue={query}
-            placeholder="Search reference, customer or email"
+            placeholder="Search reference, customer, email or safari"
           />
         </label>
         <label>
