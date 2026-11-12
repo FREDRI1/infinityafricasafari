@@ -15,7 +15,7 @@ export const defaultMaintenanceSettings: MaintenanceSettings = {
   backgroundImage: "/assets/images/hero/savannah-dawn.jpg",
   heading: "We’ll be back soon",
   message:
-    "Infinity Africa Safari is receiving a few thoughtful updates. Please check back shortly.",
+    "Our website is receiving a few thoughtful updates. Please check back shortly.",
 };
 
 export async function getMaintenanceSettings(): Promise<MaintenanceSettings> {

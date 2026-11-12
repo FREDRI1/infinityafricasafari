@@ -162,9 +162,26 @@ p {
 }
 
 .brand-wordmark small {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 8px;
   font-weight: 550;
   letter-spacing: 0.25em;
+}
+
+.brand-logo-frame {
+  position: relative;
+  display: block;
+  width: 180px;
+  height: 44px;
+  flex: 0 1 180px;
+}
+
+.brand-logo-image {
+  object-fit: contain;
+  object-position: left center;
 }
 
 .desktop-nav {
@@ -3148,6 +3165,12 @@ h2 em,
     font-size: 21px;
   }
 
+  .brand-logo-frame {
+    width: 140px;
+    height: 38px;
+    flex-basis: 140px;
+  }
+
   .brand-wordmark strong {
     font-size: 10px;
   }
@@ -6113,6 +6136,78 @@ h2 em,
   padding-top: 20px;
 }
 
+.brand-settings-form {
+  display: grid;
+  gap: 22px;
+  padding-top: 20px;
+}
+
+.brand-identity-fields,
+.brand-assets-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.brand-asset-field {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-media-preview {
+  min-height: 96px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid #efede7;
+  border-radius: 9px;
+  background:
+    linear-gradient(45deg, #f8f6f1 25%, transparent 25%),
+    linear-gradient(-45deg, #f8f6f1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f8f6f1 75%),
+    linear-gradient(-45deg, transparent 75%, #f8f6f1 75%);
+  background-color: #fff;
+  background-position:
+    0 0,
+    0 5px,
+    5px -5px,
+    -5px 0;
+  background-size: 10px 10px;
+}
+
+.brand-media-preview img {
+  max-width: 100%;
+  max-height: 68px;
+  object-fit: contain;
+}
+
+.brand-media-preview.is-empty {
+  color: #777d74;
+  font-size: 11px;
+}
+
+.brand-media-note {
+  margin: -8px 0 0;
+  color: #777d74;
+  font-size: 11px;
+}
+
+.brand-media-note a {
+  color: #80621f;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.brand-settings-form .hero-save-row p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .settings-field {
   max-width: 600px;
   gap: 6px;
@@ -6236,6 +6331,11 @@ h2 em,
   .hero-save-row .settings-submit {
     width: 100%;
     justify-content: center;
+  }
+
+  .brand-identity-fields,
+  .brand-assets-grid {
+    grid-template-columns: 1fr;
   }
 
   .staff-create-form,

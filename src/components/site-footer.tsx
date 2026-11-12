@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { SiteBrand } from "@/components/site-brand";
 
-export function SiteFooter() {
+export function SiteFooter({
+  branding,
+}: {
+  branding: { name: string; tagline: string; logoUrl: string };
+}) {
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(
     /\D/g,
     "",
@@ -12,13 +17,7 @@ export function SiteFooter() {
       <div className="footer-main">
         <div className="footer-brand">
           <Link href="/" className="brand brand-light">
-            <span className="brand-mark" aria-hidden="true">
-              I
-            </span>
-            <span className="brand-wordmark">
-              <strong>INFINITY</strong>
-              <small>AFRICA SAFARI</small>
-            </span>
+            <SiteBrand {...branding} className="brand-light" />
           </Link>
           <p>
             A more personal way to experience Africa. Tell us what you have in
@@ -58,7 +57,7 @@ export function SiteFooter() {
         </Link>
       </div>
       <div className="footer-bottom">
-        <span>© Infinity Africa Safari</span>
+        <span>© {branding.name}</span>
         <small>
           We record anonymous clicks and country-level visit data to improve
           our journeys. IP addresses and visitor IDs are not stored.

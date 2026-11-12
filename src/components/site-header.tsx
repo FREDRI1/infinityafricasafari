@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowDown, ArrowUpRight, Menu, X } from "lucide-react";
 import { destinations } from "@/data/safaris";
+import { SiteBrand } from "@/components/site-brand";
 
-export function SiteHeader() {
+export function SiteHeader({
+  branding,
+}: {
+  branding: { name: string; tagline: string; logoUrl: string };
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -14,16 +19,10 @@ export function SiteHeader() {
         <Link
           href="/"
           className="brand"
-          aria-label="Infinity Africa Safari home"
+          aria-label={`${branding.name} home`}
           onClick={() => setMenuOpen(false)}
         >
-          <span className="brand-mark" aria-hidden="true">
-            I
-          </span>
-          <span className="brand-wordmark">
-            <strong>INFINITY</strong>
-            <small>AFRICA SAFARI</small>
-          </span>
+          <SiteBrand {...branding} />
         </Link>
 
         <nav className="desktop-nav" aria-label="Main navigation">

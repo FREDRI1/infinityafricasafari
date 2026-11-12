@@ -4,6 +4,7 @@ type BookingEmailDetails = {
   reference: string;
   customerName: string;
   customerEmail: string;
+  brandName: string;
   notificationEmail?: string;
   safariTitle: string;
   travelDate: string;
@@ -40,6 +41,7 @@ export async function sendBookingEmails(details: BookingEmailDetails) {
   const name = escapeHtml(details.customerName);
   const reference = escapeHtml(details.reference);
   const safari = escapeHtml(details.safariTitle);
+  const brandName = escapeHtml(details.brandName);
   const travelDate = escapeHtml(details.travelDate);
   const guests = String(details.guests);
 
@@ -48,7 +50,7 @@ export async function sendBookingEmails(details: BookingEmailDetails) {
       from,
       to: details.customerEmail,
       subject: `We received your safari request · ${details.reference}`,
-      html: `<p>Hello ${name},</p><p>Thank you for contacting Infinity Africa Safari. We received your request for <strong>${safari}</strong>, starting ${travelDate}, for ${guests} traveller${details.guests === 1 ? "" : "s"}.</p><p>Your reference is <strong>${reference}</strong>.</p><p>This is a request, not a confirmed booking. Our team will check availability and follow up with you. No payment has been taken.</p><p>Infinity Africa Safari</p>`,
+      html: `<p>Hello ${name},</p><p>Thank you for contacting ${brandName}. We received your request for <strong>${safari}</strong>, starting ${travelDate}, for ${guests} traveller${details.guests === 1 ? "" : "s"}.</p><p>Your reference is <strong>${reference}</strong>.</p><p>This is a request, not a confirmed booking. Our team will check availability and follow up with you. No payment has been taken.</p><p>${brandName}</p>`,
     }),
     resend.emails.send({
       from,

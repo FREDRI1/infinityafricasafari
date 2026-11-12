@@ -5,18 +5,21 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MarketplaceClickTracker } from "@/components/marketplace-click-tracker";
+import { SiteBrand } from "@/components/site-brand";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import type { MaintenanceSettings } from "@/lib/maintenance-settings";
 
 type SiteChromeProps = {
   children: React.ReactNode;
+  branding: { name: string; tagline: string; logoUrl: string };
   maintenance: MaintenanceSettings & { backgroundImageUrl: string };
   canPreviewMarketplace: boolean;
 };
 
 export function SiteChrome({
   children,
+  branding,
   maintenance,
   canPreviewMarketplace,
 }: SiteChromeProps) {
@@ -52,13 +55,7 @@ export function SiteChrome({
         }}
       >
         <div className="marketplace-maintenance-content">
-          <span className="marketplace-maintenance-brand">
-            <span className="brand-mark" aria-hidden="true">I</span>
-            <span>
-              <strong>INFINITY</strong>
-              <small>AFRICA SAFARI</small>
-            </span>
-          </span>
+          <SiteBrand {...branding} className="marketplace-maintenance-brand" />
           <span className="marketplace-maintenance-kicker">A brief pause, a better journey</span>
           <h1 id="marketplace-maintenance-heading">{maintenance.heading}</h1>
           <p>{maintenance.message}</p>
@@ -81,9 +78,9 @@ export function SiteChrome({
         </aside>
       )}
       <MarketplaceClickTracker />
-      <SiteHeader />
+      <SiteHeader branding={branding} />
       {children}
-      <SiteFooter />
+      <SiteFooter branding={branding} />
     </>
   );
 }

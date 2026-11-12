@@ -12,10 +12,63 @@ import {
   normalizeHeroVideoSource,
 } from "@/lib/hero-config";
 import { requireStaffPermission } from "@/lib/admin";
+import { brandSettingsSchema } from "@/lib/brand-settings";
 import { operationalSettingsSchema } from "@/lib/operational-settings";
 import { maintenanceSettingsSchema } from "@/lib/maintenance-settings";
 import { prisma } from "@/lib/prisma";
 import { isAdminMediaSource } from "@/lib/admin-media";
+
+export async function saveBrandSettings(formData: FormData) {
+  const staff = await requireStaffPermission(
+    [StaffRole.SUPER_ADMIN, StaffRole.ADMIN],
+    StaffPermission.SYSTEM_SETTINGS,
+  );
+  const parsed = brandSettingsSchema.safeParse({
+    name: formData.get("name"),
+    tagline: formData.get("tagline"),
+    logo: formData.get("logo"),
+    icon: formData.get("icon"),
+  });
+  if (!parsed.success) {
+    throw new Error(
+      `Brand settings are invalid: ${parsed.error.issues[0]?.message ?? "check the form."}`,
+    );
+  }
+
+  const selectedMedia = [parsed.data.logo, parsed.data.icon].filter(Boolean);
+  if (
+    !(await Promise.all(
+      selectedMedia.map((media) => isAdminMediaSource(media)),
+    )).every(Boolean)
+  ) {
+    throw new Error("Choose logo and icon images from the media library.");
+  }
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.websiteSetting.upsert({
+      where: { key: "brandSettings" },
+      update: { value: parsed.data },
+      create: { key: "brandSettings", value: parsed.data },
+    });
+    await transaction.auditLog.create({
+      data: {
+        actorId: staff.id,
+        action: "BRAND_SETTINGS_UPDATED",
+        entityType: "WebsiteSetting",
+        entityId: "brandSettings",
+        details: {
+          name: parsed.data.name,
+          hasLogo: parsed.data.logo.length > 0,
+          hasCustomIcon: parsed.data.icon.length > 0,
+        } satisfies Prisma.InputJsonObject,
+      },
+    });
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/settings");
+  redirect("/admin/settings?brandSaved=1");
+}
 
 export async function saveOperationalSettings(formData: FormData) {
   const staff = await requireStaffPermission(

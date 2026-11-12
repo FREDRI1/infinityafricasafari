@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { BookingForm } from "@/components/booking-form";
+import { getBrandSettings } from "@/lib/brand-settings";
 import { getPublicSafaris } from "@/lib/catalog";
 
-export const metadata: Metadata = {
-  title: "Plan Your Safari",
-  description:
-    "Send a safari request to Infinity Africa Safari. Our team will check availability and help shape your journey.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getBrandSettings();
+  return {
+    title: "Plan Your Safari",
+    description: `Send a safari request to ${branding.name}. Our team will check availability and help shape your journey.`,
+  };
+}
 
 export default async function BookingPage({
   searchParams,

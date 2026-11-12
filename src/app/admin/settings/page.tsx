@@ -12,9 +12,11 @@ import {
   saveMaintenanceSettings,
   saveOperationalSettings,
 } from "@/app/admin/settings/actions";
+import { AdminBrandSettings } from "@/components/admin-brand-settings";
 import { AdminHeroSettings } from "@/components/admin-hero-settings";
 import { requireStaffPermission } from "@/lib/admin";
 import { getAdminMediaChoices } from "@/lib/admin-media";
+import { getBrandSettings } from "@/lib/brand-settings";
 import { getHeroConfig } from "@/lib/hero-config";
 import { getOperationalSettings } from "@/lib/operational-settings";
 import { getMaintenanceSettings } from "@/lib/maintenance-settings";
@@ -31,6 +33,7 @@ export default async function AdminSettingsPage({
 }: {
   searchParams: Promise<{
     saved?: string;
+    brandSaved?: string;
     heroSaved?: string;
     maintenanceSaved?: string;
   }>;
@@ -39,13 +42,22 @@ export default async function AdminSettingsPage({
     [StaffRole.SUPER_ADMIN, StaffRole.ADMIN],
     StaffPermission.SYSTEM_SETTINGS,
   );
-  const [settings, params, heroConfig, mediaChoices, videoChoices, maintenance] = await Promise.all([
+  const [
+    settings,
+    params,
+    heroConfig,
+    mediaChoices,
+    videoChoices,
+    maintenance,
+    branding,
+  ] = await Promise.all([
     getOperationalSettings(),
     searchParams,
     getHeroConfig(),
     getAdminMediaChoices(),
     getAdminMediaChoices({ mediaType: "video" }),
     getMaintenanceSettings(),
+    getBrandSettings(),
   ]);
 
   return (
@@ -55,7 +67,7 @@ export default async function AdminSettingsPage({
         <div>
           <span className="eyebrow">System administration</span>
           <h1>Settings</h1>
-          <p>Manage your homepage presentation and booking operations.</p>
+          <p>Manage your website identity, homepage presentation, and booking operations.</p>
         </div>
       </header>
 
@@ -71,6 +83,12 @@ export default async function AdminSettingsPage({
           Marketplace access settings have been saved.
         </p>
       )}
+
+      <AdminBrandSettings
+        mediaChoices={mediaChoices}
+        saved={params.brandSaved === "1"}
+        settings={branding}
+      />
 
       <AdminHeroSettings
         config={heroConfig}
@@ -208,8 +226,8 @@ export default async function AdminSettingsPage({
       </section>
 
       <p className="settings-footnote">
-        Changes are recorded in the staff audit log. Your company name and core
-        brand identity remain Infinity Africa Safari.
+        Website identity changes are recorded in the staff audit log and appear
+        across the public site after saving.
       </p>
     </main>
   );

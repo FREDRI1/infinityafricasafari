@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { Prisma, BookingStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getPublicSafariBySlug } from "@/lib/catalog";
+import { getBrandSettings } from "@/lib/brand-settings";
 import { sendBookingEmails } from "@/lib/booking-email";
 import { bookingRequestSchema } from "@/lib/booking-validation";
 import { findSeasonalRate } from "@/lib/pricing";
@@ -190,6 +191,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ reference: existing.reference });
     }
 
+    const branding = await getBrandSettings();
     const normalizedEmail = values.email.toLocaleLowerCase();
     const booking = await prisma.$transaction(async (transaction) => {
       const customer = await transaction.customer.upsert({
@@ -285,6 +287,7 @@ export async function POST(request: Request) {
       reference: booking.reference,
       customerName: values.fullName,
       customerEmail: normalizedEmail,
+      brandName: branding.name,
       notificationEmail: operationalSettings.notificationEmail,
       safariTitle: safari.title,
       travelDate: values.travelDate,

@@ -13,6 +13,7 @@ import {
 import { AdminTopbar } from "@/components/admin-topbar";
 import { ConfirmActionForm } from "@/components/confirm-action-form";
 import { bookingStaffRoles, requireStaffPermission } from "@/lib/admin";
+import { getBrandSettings } from "@/lib/brand-settings";
 import { prisma } from "@/lib/prisma";
 import {
   logCustomerCommunication,
@@ -46,11 +47,17 @@ function getSnapshotTitle(snapshot: Prisma.JsonValue) {
   return "Safari request";
 }
 
-function whatsappLink(phone: string, customerName: string, reference: string, safari: string) {
+function whatsappLink(
+  phone: string,
+  customerName: string,
+  reference: string,
+  safari: string,
+  brandName: string,
+) {
   const digits = phone.replace(/\D/g, "");
   if (digits.length < 8) return null;
 
-  const message = `Hello ${customerName},\n\nThank you for choosing Infinity Africa Safari. We have received your safari request ${reference} for ${safari}. Our team would be happy to discuss availability and your plans.\n\nInfinity Africa Safari Team`;
+  const message = `Hello ${customerName},\n\nThank you for choosing ${brandName}. We have received your safari request ${reference} for ${safari}. Our team would be happy to discuss availability and your plans.\n\n${brandName} Team`;
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
@@ -78,6 +85,7 @@ export default async function AdminBookingDetailPage({
   });
   if (!booking) notFound();
 
+  const branding = await getBrandSettings();
   const safariTitle = getSnapshotTitle(booking.safariSnapshot);
   const seasonalPrice = getSeasonalPriceSnapshot(booking.safariSnapshot);
   const verifiedPayments = booking.payments.filter((payment) => payment.verified);
@@ -93,6 +101,7 @@ export default async function AdminBookingDetailPage({
     booking.customer.fullName,
     booking.reference,
     safariTitle,
+    branding.name,
   );
   const customerWhatsApp = booking.customer.whatsapp
     ? whatsappLink(
@@ -100,6 +109,7 @@ export default async function AdminBookingDetailPage({
         booking.customer.fullName,
         booking.reference,
         safariTitle,
+        branding.name,
       )
     : null;
   const canVerifyPayments =

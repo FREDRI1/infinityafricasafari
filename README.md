@@ -18,6 +18,7 @@ Premium safari discovery and assisted booking platform built with Next.js, stric
 - Public marketplace click analytics with country-level reporting and no stored visitor identifiers.
 - Homepage excursion and guest review content managed in the admin website-content editor.
 - Homepage hero image, slideshow, video mode, and overlay copy managed in Settings.
+- Company name, tagline, website logo, and browser icon managed in admin brand settings.
 - Booking search, status history, customer communication notes and WhatsApp hand-off links.
 - Manually recorded payments remain unverified until an authorized administrator verifies them.
 - Sample itinerary concepts and licensed illustrative Unsplash photography; no actual prices or business contact details are assumed.
@@ -68,8 +69,8 @@ npm run db:validate
 npm run build
 ```
 
-Run `npm run test` for booking, pricing, homepage content, and marketplace click tests. Database-backed flows require valid service configuration to test end-to-end.
+Run `npm run test` for booking, pricing, homepage content, brand settings, and marketplace click tests. Database-backed flows require valid service configuration to test end-to-end.
 
 ## Media
 
-Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). Staff with content access can upload JPEG, PNG, WebP, or GIF images up to 4 MB and MP4 videos up to 100 MB from Admin → Media library. Images and videos are stored in the production branch's public-read `site-media` bucket; uploaded images can be selected in website content editors, and uploaded videos can be selected for the homepage hero. Upload only media you own or are licensed to use.
+Image provenance, intended usage and licensing notes are in [`public/assets/MEDIA.md`](public/assets/MEDIA.md). Staff with content access can upload JPEG, PNG, WebP, or GIF images up to 4 MB and MP4 videos up to 100 MB from Admin → Media library. Images and videos are stored in the production branch's public-read `site-media` bucket; uploaded images can be selected for website content and brand identity, and uploaded videos can be selected for the homepage hero. Upload only media you own or are licensed to use.
